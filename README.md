@@ -7,7 +7,7 @@ NOTE: This utility works synchronously.
 
 ## Installation
 
-Download the [minified library](https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.min.js) (which is under 10KB) and include it into your html. Alternatively you can include the [development version](https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.js).
+Download the [minified library](https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.min.js) (which is under 10KB) and include it into your html. Alternatively you can download the [development version](https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.js).
 
 ```html
 <script src="monguito-db.min.js"></script>
