@@ -49,7 +49,7 @@ var ordersCollection = db.orders;
 var usersCollection  = db.users;
 ```
 
-## Collection.insert(obj)
+### Collection.insert(obj)
 
 Inserts a new object into the collection and returns a reference to the inserted Document.
 
@@ -67,6 +67,23 @@ var documentId = order._id;
 // case 2) _id will be automatically assigned as an UUID.
 var order = db.orders.insert({_id: "uuid", recipient: "Juan", total: 50});
 var documentId = order._id;
+```
+
+### Collection.get(documentId)
+
+Gets the Document that matches the specified _id. If there is no matching document within the collection, it will be returned null.
+
+The following actions can be performed on the returned document: **update, remove, pretty**.
+
+NOTE: **get()** is faster than **find()** and **findOne()**.
+
+```js
+var db    = new MonguitoDB(localStorage, "orders");
+var order = db.orders.get(1);
+
+console.log(order.pretty());         // Prints the document.
+order.update({status: "Delivered"}); // Updates the document.
+order.remove();                      // Removes the document.
 ```
 
 ## Creator
