@@ -75,6 +75,29 @@ var order = db.orders.insert({_id: "uuid", recipient: "Juan", total: 50});
 var documentId = order._id;
 ```
 
+### Collection.update(query, obj) → {Cursor}
+
+Updates one or several documents in the collection and returns a Cursor containing the updated documents.
+
+NOTE: _id property can't be modified.
+ 
+| Parameter | Type             | Description                                 |
+| --------- | ---------------- |-------------------------------------------- |
+| query     | object, function | Selection criteria for the update           |
+| obj       | object           | The modifications to apply (_id is omitted) |
+
+**Returns**: Cursor
+
+```js
+ var db = new MonguitoDB(localStorage, "orders");
+
+ // Updates a single document (that one matching _id = 1).
+ db.orders.update({_id: 1}, {status: "Delivered"});
+
+ // Updates several documents (those matching recipient = "Juan").
+ db.orders.update({recipient: "Juan"}, {status: "Delivered"});
+```
+
 ### Collection.find(query) → {Cursor}
 
 Retrieves all documents in the collection matching the specified query. If no query is passed-in, all documents within the collection will be returned.
