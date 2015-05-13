@@ -32,13 +32,13 @@ var db = new MonguitoDB(sessionStorage, ["orders", "users"]);
 var db = new MonguitoDB(null, ["orders", "users"]);
 ```
 
-## Collections
+## Collection
 
 A collection is a set of documents. It is equivalent to a table in the relational world, with the difference that a collection does not enforce a schema.
 
 The following actions can be performed on a Collection: **insert, update, remove, find, findOne, get, count.**
 
-Collections are initialized by **MonguitoDB()** constructor and they can't be initialized by yourself!
+Collections are initialized by **MonguitoDB()** constructor, they can't be initialized by yourself.
 
 ```js
 // The following code shows how to reference collections initialized by
@@ -51,7 +51,7 @@ var usersCollection  = db.users;
 
 ### Collection.insert(obj) → {Document}
 
-Inserts a new object into the collection and returns a reference to the inserted Document.
+Inserts a new object into the collection and returns a reference to the inserted [Document](monguitodb#document).
 
 NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:
  1. Auto-numeric: when _id is omitted in the passed-in obj.
@@ -214,7 +214,7 @@ var db    = new MonguitoDB(localStorage, "orders");
 var count = db.orders.count();
 ```
 
-## Documents
+## Document
 
 A document belongs to a Collection. It is a JSON structure composed by key-value pairs. It can be thought as a "record" belonging to a table in the relational world.
 
