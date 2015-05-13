@@ -13,7 +13,7 @@ module.exports = function (grunt) {
                 "src/monguito-db.js",
             ],
             after_concat: [
-                "lib/<%= pkg.buildName %>.js",
+                "build/<%= pkg.buildName %>.js",
             ],
             options: {
                 jshintrc: ".jshintrc"
@@ -49,7 +49,7 @@ module.exports = function (grunt) {
                     "src/collection.js",
                     "src/monguito-db.js",
                 ],
-                dest: "lib/<%= pkg.buildName %>.js"
+                dest: "build/<%= pkg.buildName %>.js"
             }
         },
 
@@ -77,7 +77,7 @@ module.exports = function (grunt) {
             },
             dist: {
                 files: {
-                    "lib/<%= pkg.buildName %>.min.js": ["<%= concat.dist.dest %>"]
+                    "build/<%= pkg.buildName %>.min.js": ["<%= concat.dist.dest %>"]
                 }
             }
         }

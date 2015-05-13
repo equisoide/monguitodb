@@ -25,22 +25,22 @@
   ],
   "config": {},
   "directories": {
+    "build": "./build",
     "demo": "./demo",
     "doc": "./doc",
-    "lib": "./lib",
     "src": "./src",
     "test": "./test"
   },
   "files": [
+    "build",
     "demo",
     "doc",
-    "lib",
     "src",
     "test",
     "LICENSE",
     "README.md"
   ],
-  "main": "./lib/monguito-db.js",
+  "main": "./build/monguito-db.js",
   "buildName": "monguito-db",
   "devDependencies": {
     "qunitjs": "^1.18.0"
