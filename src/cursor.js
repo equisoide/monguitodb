@@ -17,10 +17,10 @@
  */
 function Cursor(collection) {
 
-	// PRIVATE METHODS:
+    // PRIVATE METHODS:
     // ------------------------------------------------------------------------
 
-	/**
+    /**
      * Adds functions to manipulate the passed-in collection, specifically:
      * update, remove, get, find, findOne, sort, first, last, pretty, count.
      *
@@ -28,19 +28,19 @@ function Cursor(collection) {
      */
     var _addBehaviour = function () {
         if (collection) {
-        	collection.update  = _update;
-			collection.remove  = _remove;
+            collection.update  = _update;
+            collection.remove  = _remove;
             collection.get     = _get;
-			collection.find    = _find;
-			collection.findOne = _findOne;
-			collection.sort   = _sort;
-			collection.first   = _first;
-			collection.last    = _last;
-			collection.pretty  = _pretty;
-			collection.count   = _count;
-		}
+            collection.find    = _find;
+            collection.findOne = _findOne;
+            collection.sort   = _sort;
+            collection.first   = _first;
+            collection.last    = _last;
+            collection.pretty  = _pretty;
+            collection.count   = _count;
+        }
 
-		return collection;
+        return collection;
     };
     
     // PUBLIC METHODS:
