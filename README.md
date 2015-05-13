@@ -51,7 +51,7 @@ var usersCollection  = db.users;
 
 ### Collection.insert(obj) → {Document}
 
-Inserts a new object into the collection and returns a reference to the inserted [Document](monguitodb#document).
+Inserts a new object into the collection and returns a reference to the inserted [Document]([Document](https://github.com/equisoide/monguitodb#document)).
 
 NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:
  1. Auto-numeric: when _id is omitted in the passed-in obj.
