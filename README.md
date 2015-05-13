@@ -105,7 +105,7 @@ Removes one or several documents from the collection.
 NOTE: If no query is passed-in, all documents in the collection will be removed.
 
 ```js
- var db = new MonguitoDB(localStorage, "orders");
+var db = new MonguitoDB(localStorage, "orders");
 
 // Removes a single document (that one matching _id = 1).
 db.orders.remove({_id: 1});
@@ -113,7 +113,7 @@ db.orders.remove({_id: 1});
 // Removes several documents (those matching recipient = "Juan").
 db.orders.remove({recipient: "Juan"});
 
-// Removes all documents.
+// Removes all documents in the collection.
 db.orders.remove();
 ```
 
@@ -212,6 +212,33 @@ Counts the number of documents in the collection.
 ```js
 var db    = new MonguitoDB(localStorage, "orders");
 var count = db.orders.count();
+```
+
+## Documents
+
+A document belongs to a Collection. It is a JSON structure composed by key-value pairs. It can be thought as a "record" belonging to a table in the relational world.
+
+The following actions can be performed on a document: **update, remove, pretty**.
+
+Documents are retrieved through methods in the Collection class, and they can't be initialized by yourself!
+
+```js
+var db = new MonguitoDB(localStorage, "orders");
+
+// You get a reference to a Document when you insert one.
+var order = db.orders.insert({recipient: "Juan", total: 50});
+
+// You can get a Document with get() if you know its _id.
+var order = db.orders.get(1);
+
+// Individual elements retrieved from find() are of type Document.
+var order = db.orders.find({recipient: "Juan"})[0];
+
+// By using findOne you can get the first Document retrieved from a query.
+var order = db.orders.findOne({recipient: "Juan"});
+
+// You can also get a reference to a Document by using first() or last().
+var order = db.orders.find().first();
 ```
 
 ## Creator
