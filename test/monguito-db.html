@@ -1,0 +1,713 @@
+<!Doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>monguito-db.js Test</title>
+  <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+  <script src="../src/util.js"></script>
+  <script src="../lib/monguito-db.min.js"></script>
+  <script>
+
+    var runTests = function (storage, collection) {
+      if (storage) {
+        storage.clear();
+      }
+
+      QUnit.test("new MonguitoDB()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { new MonguitoDB();                    },  "exception: no arguments");
+        assert.throws(function () { new MonguitoDB(1, 2, 3);             },  "exception: invalid number of arguments");
+        assert.throws(function () { new MonguitoDB(1, 2);                },  "exception: invalid type of arguments");
+        assert.throws(function () { new MonguitoDB(storage, null);       },  "exception: null collection name");
+        assert.throws(function () { new MonguitoDB(storage, 1);          },  "exception: invalid collection type");
+        assert.throws(function () { new MonguitoDB(storage, "");         },  "exception: empty collection name");
+        assert.throws(function () { new MonguitoDB(storage, "******");   },  "exception: invalid collection name");
+        assert.throws(function () { new MonguitoDB(storage, []);         },  "exception: empty collection array");
+        assert.throws(function () { new MonguitoDB(storage, [1, 2, 3]);  },  "exception: types in collection array");
+        assert.throws(function () { new MonguitoDB(storage, ["", ""]);   },  "exception: empty collection names");
+        assert.throws(function () { new MonguitoDB(storage, ["1", "2"]); },  "exception: invalid collection names");
+        
+        assert.notDeepEqual(new MonguitoDB(storage, collection),       null, "valid setting: a single collection");
+        assert.notDeepEqual(new MonguitoDB(storage, ["col1", "col2"]), null, "valid setting: several collections");
+        
+        assert.deepEqual(db["xxx"],         undefined, "accessing an undefined collection");
+        assert.notDeepEqual(db[collection], undefined, "accessing a defined collection");
+      });
+
+      QUnit.test("MonguitoDB.Collection.insert()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].insert();               }, "exception: no arguments");
+        assert.throws(function () { db[collection].insert(null);           }, "exception: null");
+        assert.throws(function () { db[collection].insert(1234);           }, "exception: a number");
+        assert.throws(function () { db[collection].insert("12");           }, "exception: a string");
+        assert.throws(function () { db[collection].insert(function () {}); }, "exception: a function");
+        assert.throws(function () { db[collection].insert({}, {});         }, "exception: several arguments");
+        assert.throws(function () { db[collection].insert({_id: 1});       }, "exception: _id != 'uuid'");
+
+        var doc1 = db[collection].insert({name: "juan1"});
+        assert.deepEqual(typeof doc1._id,        "number", "inserted juan1: _id is a number");
+        assert.deepEqual(doc1.name,              "juan1",  "inserted juan1: returned document is juan1");
+        assert.deepEqual(db[collection].count(), 1,        "inserted juan1: count() is 1");
+        
+        var doc2 = db[collection].insert({_id: "uuid", name: "juan2"});
+        assert.deepEqual(util.isValidUUID(doc2._id), true,    "inserted juan2: _id is an UUID");
+        assert.deepEqual(db[collection].count(),     2,       "inserted juan2: count() is 2");
+        assert.deepEqual(doc2.name,                  "juan2", "inserted juan2: returned document is juan2");
+      });
+
+      QUnit.test("MonguitoDB.Collection.get()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].get();               }, "exception: empty arguments");
+        assert.throws(function () { db[collection].get(null);           }, "exception: null");
+        assert.throws(function () { db[collection].get(-1);             }, "exception: a negative number");
+        assert.throws(function () { db[collection].get("1");            }, "exception: a number as a string");
+        assert.throws(function () { db[collection].get(function () {}); }, "exception: a function");
+        assert.throws(function () { db[collection].get(1, 2, 3);        }, "exception: several arguments");
+
+        var id1 = db[collection].insert({name: "juan1"})._id;
+        var id2 = db[collection].insert({name: "juan2"})._id;
+        var id3 = db[collection].insert({name: "juan3"})._id;
+
+        var doc1 = db[collection].get(id1);
+        var doc2 = db[collection].get(id2);
+        var doc3 = db[collection].get(id3);
+        
+        var uuid = "34C8DBFC-203F-47F5-A450-6459A9C520F4";
+        assert.deepEqual(db[collection].get(0),             null,      "invalid _id: 0");
+        assert.deepEqual(db[collection].get(100),           null,      "invalid _id: 100");
+        assert.deepEqual(db[collection].get(uuid),          null,      "invalid _id: " + uuid);
+        assert.deepEqual(db[collection].get(doc1._id).name, doc1.name, "getting juan1");
+        assert.deepEqual(db[collection].get(doc2._id).name, doc2.name, "getting juan2");
+        assert.deepEqual(db[collection].get(doc3._id).name, doc3.name, "getting juan3");
+      });
+
+      QUnit.test("MonguitoDB.Collection.find()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].find(null); },   "exception: null");
+        assert.throws(function () { db[collection].find(1234); },   "exception: a number");
+        assert.throws(function () { db[collection].find("12"); },   "exception: a string");
+        assert.throws(function () { db[collection].find({}, {}); }, "exception: several arguments");
+
+        db[collection].insert({name: "juan1"});
+        db[collection].insert({name: "juan2"});
+        db[collection].insert({name: "juan3"});
+
+        var allDocs1  = db[collection].find({});
+        var allDocs2  = db[collection].find(function (e) { return true; });
+        var allDocs3  = db[collection].find(function (e) { return e.name.indexOf("juan") >= 0; });
+        var justJuan1 = db[collection].find({name: "juan1"});
+        var justJuan2 = db[collection].find({name: "juan2"});
+        var justJuan3 = db[collection].find({name: "juan3"});
+        var juan1And3 = db[collection].find(function (e) { return e.name === "juan1" || e.name === "juan3"; });
+
+        assert.deepEqual(allDocs1.length,  3, "allDocs1.length = 3");
+        assert.deepEqual(allDocs2.length,  3, "allDocs2.length = 3");
+        assert.deepEqual(allDocs3.length,  3, "allDocs3.length = 3");
+        assert.deepEqual(justJuan1.length, 1, "justJuan1.length = 1");
+        assert.deepEqual(justJuan2.length, 1, "justJuan2.length = 1");
+        assert.deepEqual(justJuan3.length, 1, "justJuan3.length = 1");
+        assert.deepEqual(juan1And3.length, 2, "juan1And3.length = 2");
+
+        var validateNames = function (array, name) {
+            for (var i = 0, j = 1; i < array.length; i++, j++) {
+                assert.deepEqual(array[i].name, ("juan" + j), name + "[" + i + "].name = " + ("juan" + j));
+            }
+        };
+
+        validateNames(allDocs1, "allDocs1");
+        validateNames(allDocs2, "allDocs2");
+        validateNames(allDocs3, "allDocs3");
+
+        assert.deepEqual(justJuan1[0].name, "juan1", "justJuan1[0].name = juan1");
+        assert.deepEqual(justJuan2[0].name, "juan2", "justJuan2[0].name = juan2");
+        assert.deepEqual(justJuan3[0].name, "juan3", "justJuan3[0].name = juan3");
+        assert.deepEqual(juan1And3[0].name, "juan1", "juan1And3[0].name = juan1");
+        assert.deepEqual(juan1And3[1].name, "juan3", "juan1And3[1].name = juan3");
+      });
+
+      QUnit.test("MonguitoDB.Collection.findOne()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].findOne(null);   }, "exception: null");
+        assert.throws(function () { db[collection].findOne(1234);   }, "exception: a number");
+        assert.throws(function () { db[collection].findOne("12");   }, "exception: a string");
+        assert.throws(function () { db[collection].findOne({}, {}); }, "exception: several arguments");
+
+        db[collection].insert({name: "juan1", total: 10});
+        db[collection].insert({name: "juan2", total: 20});
+        db[collection].insert({name: "juan3", total: 30});
+
+        var juan1_a = db[collection].findOne();
+        var juan1_b = db[collection].findOne({});
+        var juan1_c = db[collection].findOne(function (e) { return true; });
+        var juan1_d = db[collection].findOne(function (e) { return e.name.indexOf("juan") >= 0; });
+        var juan1_e = db[collection].findOne({name: "juan1", total: 10});
+        var juan2   = db[collection].findOne({name: "juan2", total: 20});
+        var juan3   = db[collection].findOne({name: "juan3", total: 30});
+        var nothing = db[collection].findOne({name: "juan1", total: 30});
+        
+        assert.deepEqual(juan1_a.total, 10,   "juan1_a.total = 10");
+        assert.deepEqual(juan1_b.total, 10,   "juan1_b.total = 10");
+        assert.deepEqual(juan1_c.total, 10,   "juan1_c.total = 10");
+        assert.deepEqual(juan1_d.total, 10,   "juan1_d.total = 10");
+        assert.deepEqual(juan1_e.total, 10,   "juan1_e.total = 10");
+        assert.deepEqual(juan2.total,   20,   "juan2.total = 20");
+        assert.deepEqual(juan3.total,   30,   "juan3.total = 30");
+        assert.deepEqual(nothing,       null, "no matching document");
+      });
+
+      QUnit.test("MonguitoDB.Collection.count()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].count(null);       }, "exception: null");
+        assert.throws(function () { db[collection].count(1234);       }, "exception: a number");
+        assert.throws(function () { db[collection].count("12");       }, "exception: a string");
+        assert.throws(function () { db[collection].count({});         }, "exception: an object");
+        assert.throws(function () { db[collection].count(1, "2", {}); }, "exception: several arguments");
+
+        assert.ok(util.isValidNaturalNumber(db[collection].count()), "count() returns a natural number");
+
+        for (var i = 1; i <= 100; i++) {
+            db[collection].insert({name: "juan" + i});
+        }
+
+        assert.deepEqual(db[collection].count(), 100, "count() = 100");
+      });
+
+      QUnit.test("MonguitoDB.Collection.update()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].update();                   }, "exception: no arguments");
+        assert.throws(function () { db[collection].update(null, null);         }, "exception: null arguments");
+        assert.throws(function () { db[collection].update({}, {}, {});         }, "exception: number of arguments");
+        assert.throws(function () { db[collection].update(null, {});           }, "exception: null query");
+        assert.throws(function () { db[collection].update(1, {});              }, "exception: query as number");
+        assert.throws(function () { db[collection].update("1", {});            }, "exception: query as string");
+        assert.throws(function () { db[collection].update({}, null)            }, "exception: null update");
+        assert.throws(function () { db[collection].update({}, 1)               }, "exception: update as number");
+        assert.throws(function () { db[collection].update({}, "1")             }, "exception: update as string");
+        assert.throws(function () { db[collection].update({}, function () {})  }, "exception: update as function");
+
+        db[collection].insert({name: "juan1", total: 10});
+        db[collection].insert({name: "juan2", total: 20});
+        db[collection].insert({name: "juan3", total: 30});
+
+        db[collection].update({}, {});
+        db[collection].update(function () { return true; }, {});
+        db[collection].update({name: "juan1"}, {name: "JuanDavid1"});
+        db[collection].update({name: "juan2"}, {name: "JuanDavid2"});
+        db[collection].update({name: "juan3"}, {name: "JuanDavid3"});
+
+        assert.deepEqual(db[collection].find({name: "JuanDavid1"}).count(), 1, "juan1 was updated");
+        assert.deepEqual(db[collection].find({name: "JuanDavid2"}).count(), 1, "juan2 was updated");
+        assert.deepEqual(db[collection].find({name: "JuanDavid3"}).count(), 1, "juan3 was updated");
+        
+        db[collection].update({}, {newProp: "newProp"}).forEach(function (doc) {
+          assert.deepEqual(doc.newProp, "newProp", doc.name + " was updated with newProp!");
+        });
+
+        db[collection].update(function () { return true; }, {otherProp: "otherProp"}).forEach(function (doc) {
+          assert.deepEqual(doc.otherProp, "otherProp", doc.name + " was updated with otherProp!");
+        });
+
+        db[collection].update({}, {_id: 1000000}).forEach(function (doc) {
+          assert.notDeepEqual(doc._id, 1000000, doc.name + " was not updated to _id = 1000");
+        });
+      });
+
+      QUnit.test("MonguitoDB.Collection.remove()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].remove(null);   }, "exception: null query");
+        assert.throws(function () { db[collection].remove({}, {}); }, "exception: number of arguments");
+        assert.throws(function () { db[collection].remove(1);      }, "exception: query as number");
+        assert.throws(function () { db[collection].remove("1");    }, "exception: query as string");
+
+        assert.deepEqual(db[collection].count(), 0, "count() = 0");
+
+        for (var i = 1; i <= 100; i++) {
+            db[collection].insert({name: "juan" + i});
+        }
+
+        assert.deepEqual(db[collection].count(), 100, "count() = 100");
+
+        for (var i = 100; i >= 1; i--) {
+            assert.deepEqual(db[collection].count(), i, "removed document " + i);
+            db[collection].remove({name: "juan" + i});
+        }
+
+        assert.deepEqual(db[collection].count(), 0, "count() = 0");
+
+        for (var i = 1; i <= 100; i++) {
+            db[collection].insert({name: "juan" + i});
+        }
+
+        assert.deepEqual(db[collection].count(), 100, "count() = 100");
+        db[collection].remove();
+        assert.deepEqual(db[collection].count(), 0, "count() = 0");
+      });
+
+      QUnit.test("MonguitoDB.Document.update()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        var update = function (doc) {
+            var path = "update " + doc.name + ", ";
+
+            assert.throws(function () { doc.update(null);          }, path + "exception: null update");
+            assert.throws(function () { doc.update({}, {});        }, path + "exception: number of arguments");
+            assert.throws(function () { doc.update(1)              }, path + "exception: update as number");
+            assert.throws(function () { doc.update("1")            }, path + "exception: update as string");
+            assert.throws(function () { doc.update(function () {}) }, path + "exception: update as function");
+
+            var val1 = util.generateUUID();
+            doc.update({val1: val1, _id: 1000000});
+
+            assert.deepEqual(doc.val1,                                  val1,     path + " doc.val1 was updated");
+            assert.deepEqual(db[collection].get(doc._id).val1,          val1,     path + " get() works");
+            assert.deepEqual(db[collection].find({val1: val1})[0].name, doc.name, path + " find() works");
+            assert.deepEqual(db[collection].findOne({val1: val1}).name, doc.name, path + " findOne() works");
+            assert.notDeepEqual(doc._id, 1000000, path + " doc._id can't be updated");
+
+            var val2 = util.generateUUID();
+            doc.val2 = val2;
+            doc.update();
+
+            assert.deepEqual(doc.val2,                                  val2,     path + " doc.val2 was updated");
+            assert.deepEqual(db[collection].get(doc._id).val2,          val2,     path + " get() works");
+            assert.deepEqual(db[collection].find({val2: val2})[0].name, doc.name, path + " find() works");
+            assert.deepEqual(db[collection].findOne({val2: val2}).name, doc.name, path + " findOne() works");
+        };
+
+        var doc1 = db[collection].insert({name: "juan1"});
+        var doc2 = db[collection].insert({name: "juan2"});
+        var doc3 = db[collection].insert({name: "juan3"});
+        var doc4 = db[collection].insert({name: "juan4"});
+        var doc5 = db[collection].insert({name: "juan5"});
+        var doc6 = db[collection].insert({name: "juan6"});
+
+        update(db[collection].find().first());
+        update(doc2);
+        update(db[collection].get(doc3._id));
+        update(db[collection].find({name: "juan4"})[0]);
+        update(db[collection].findOne({name: "juan5"}));
+        update(db[collection].find().last());
+      });
+
+      QUnit.test("MonguitoDB.Document.remove()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        var remove = function (doc) {
+            var path = "remove " + doc.name + ", ";
+
+            assert.throws(function () { doc.remove({}); }, path + "exception: arguments aren't allowed");
+
+            var count = db[collection].count();
+            doc.remove();
+            assert.deepEqual(db[collection].count(), count - 1, path + "count() decreases 1");
+
+            assert.throws(function () { doc.remove(); }, path + "you can't remove anymore");
+            assert.throws(function () { doc.update(); }, path + "you can't update anymore");
+            
+            assert.deepEqual(db[collection].find({_id: doc._id}).count(), 0, path + "you can't find anymore");
+        };
+
+        var doc1 = db[collection].insert({name: "juan1"});
+        var doc2 = db[collection].insert({name: "juan2"});
+        var doc3 = db[collection].insert({name: "juan3"});
+        var doc4 = db[collection].insert({name: "juan4"});
+        var doc5 = db[collection].insert({name: "juan5"});
+        var doc6 = db[collection].insert({name: "juan6"});
+
+        remove(db[collection].find().first());
+        remove(doc2);
+        remove(db[collection].get(doc3._id));
+        remove(db[collection].find({name: "juan4"})[0]);
+        remove(db[collection].findOne({name: "juan5"}));
+        remove(db[collection].find().last());
+
+        assert.deepEqual(db[collection].count(), 0, "all documents were removed");
+      });
+
+      QUnit.test("MonguitoDB.Document.pretty()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        var pretty = function (doc) {
+            var path = "pretty " + doc.name + ", ";
+            assert.throws(function () { doc.pretty({}); },  path + "exception: arguments aren't allowed");
+            assert.deepEqual(typeof doc.pretty(), "string", path + "typeof pretty() is a string");
+            assert.ok(doc.pretty().indexOf(doc.name) >= 0,  path + "pretty() contains name");
+        };
+
+        var doc1 = db[collection].insert({name: "juan1"});
+        var doc2 = db[collection].insert({name: "juan2"});
+        var doc3 = db[collection].insert({name: "juan3"});
+        var doc4 = db[collection].insert({name: "juan4"});
+        var doc5 = db[collection].insert({name: "juan5"});
+        var doc6 = db[collection].insert({name: "juan6"});
+
+        pretty(db[collection].find().first());
+        pretty(doc2);
+        pretty(db[collection].get(doc3._id));
+        pretty(db[collection].find({name: "juan4"})[0]);
+        pretty(db[collection].findOne({name: "juan5"}));
+        pretty(db[collection].find().last());
+      });
+
+      QUnit.test("MonguitoDB.Cursor.update()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        for (var i = 1; i <= 60; i++) {
+            db[collection].insert({name: "juan" + i, category: (i <= 10 ? "A" : i <= 30 ? "B" : "C")});
+        }
+
+        var cursorA = db[collection].find({category: "A"});
+        var cursorB = db[collection].find({category: "B"});
+        var cursorC = db[collection].find({category: "C"});
+
+        assert.throws(function () { cursorA.update(null);          }, "exception: null update");
+        assert.throws(function () { cursorA.update({}, {});        }, "exception: number of arguments");
+        assert.throws(function () { cursorA.update(1)              }, "exception: update as number");
+        assert.throws(function () { cursorA.update("1")            }, "exception: update as string");
+        assert.throws(function () { cursorA.update(function () {}) }, "exception: update as function");
+
+        cursorA.update({category: "AA"}).forEach(function (doc) { if (doc.category !== "AA") { throw Error(); } });
+        cursorB.update({category: "BB"}).forEach(function (doc) { if (doc.category !== "BB") { throw Error(); } });
+        cursorC.update({category: "CC"}).forEach(function (doc) { if (doc.category !== "CC") { throw Error(); } });
+        cursorC.update({_id: 1000000}).forEach(function (doc) { if (doc._id === 1000000) { throw Error(); } });
+
+        assert.deepEqual(db[collection].find({category: "AA"}).length, 10, "10 elements in category AA");
+        assert.deepEqual(db[collection].find({category: "BB"}).length, 20, "20 elements in category BB");
+        assert.deepEqual(db[collection].find({category: "CC"}).length, 30, "30 elements in category CC");
+
+        var cursorD = db[collection].find(function (e) { return e.category === "AA" || e.category === "CC" });
+        cursorD.forEach(function (doc) {
+            doc.category = "BB";
+        });
+        cursorD.update();
+        assert.deepEqual(db[collection].find({category: "BB"}).length, 60, "60 elements in category BB");        
+      });
+
+      QUnit.test("MonguitoDB.Cursor.remove()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        for (var i = 1; i <= 60; i++) {
+            db[collection].insert({name: "juan" + i, category: (i <= 10 ? "A" : i <= 30 ? "B" : "C")});
+        }
+
+        var cursorA = db[collection].find({category: "A"});
+        var cursorB = db[collection].find({category: "B"});
+        var cursorC = db[collection].find({category: "C"});
+
+        assert.throws(function () { cursorA.remove({}); }, "exception: arguments aren't allowed");
+
+        cursorA.remove();
+        assert.deepEqual(cursorA.count(), 0, "cursorA is empty");
+        assert.deepEqual(db[collection].count(), 50, "50 elements after removing category A");
+
+        cursorB.remove();
+        assert.deepEqual(cursorB.count(), 0, "cursorB is empty");
+        assert.deepEqual(db[collection].count(), 30, "30 elements after removing category B");
+
+        cursorC.remove();
+        assert.deepEqual(cursorC.count(), 0, "cursorC is empty");
+        assert.deepEqual(db[collection].count(), 0, "0 elements after removing category C");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.get()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        var id1 = db[collection].insert({name: "juan1"})._id;
+        var id2 = db[collection].insert({name: "juan2"})._id;
+        var id3 = db[collection].insert({name: "juan3"})._id;
+        var id4 = db[collection].insert({name: "juan4"})._id;
+        var id5 = db[collection].insert({name: "juan5"})._id;
+        var id6 = db[collection].insert({name: "juan6"})._id;
+
+        var cursor = db[collection].find();
+
+        assert.throws(function () { cursor.get();               }, "exception: empty arguments");
+        assert.throws(function () { cursor.get(null);           }, "exception: null");
+        assert.throws(function () { cursor.get(-1);             }, "exception: a negative number");
+        assert.throws(function () { cursor.get("1");            }, "exception: a number as a string");
+        assert.throws(function () { cursor.get(function () {}); }, "exception: a function");
+        assert.throws(function () { cursor.get(1, 2, 3);        }, "exception: several arguments");
+
+        assert.deepEqual(cursor.get(id1).name, "juan1", "cursor.get(id1) is juan1");
+        assert.deepEqual(cursor.get(id2).name, "juan2", "cursor.get(id2) is juan2");
+        assert.deepEqual(cursor.get(id3).name, "juan3", "cursor.get(id3) is juan3");
+        assert.deepEqual(cursor.get(id4).name, "juan4", "cursor.get(id4) is juan4");
+        assert.deepEqual(cursor.get(id5).name, "juan5", "cursor.get(id5) is juan5");
+        assert.deepEqual(cursor.get(id6).name, "juan6", "cursor.get(id6) is juan6");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.find()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        for (var i = 1; i <= 60; i++) {
+            db[collection].insert({name: "juan" + i, category: (i <= 10 ? "A" : i <= 30 ? "B" : "C")});
+        }
+
+        var cursor = db[collection].find();
+
+        assert.throws(function () { cursor.find(null); },   "exception: null");
+        assert.throws(function () { cursor.find(1234); },   "exception: a number");
+        assert.throws(function () { cursor.find("12"); },   "exception: a string");
+        assert.throws(function () { cursor.find({}, {}); }, "exception: several arguments");
+
+        assert.deepEqual(cursor.find({category: "A"}).count(), 10, "10 elements in category A");
+        assert.deepEqual(cursor.find({category: "B"}).count(), 20, "20 elements in category B");
+        assert.deepEqual(cursor.find({category: "C"}).count(), 30, "30 elements in category C");
+        assert.deepEqual(cursor.count(), 60, "cursor is inmutable");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.findOne()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        db[collection].insert({name: "juan1", total: 10});
+        db[collection].insert({name: "juan2", total: 20});
+        db[collection].insert({name: "juan3", total: 30});
+
+        var cursor = db[collection].find();
+
+        assert.throws(function () { cursor.findOne(null);   }, "exception: null");
+        assert.throws(function () { cursor.findOne(1234);   }, "exception: a number");
+        assert.throws(function () { cursor.findOne("12");   }, "exception: a string");
+        assert.throws(function () { cursor.findOne({}, {}); }, "exception: several arguments");
+
+        var juan1_a = cursor.findOne();
+        var juan1_b = cursor.findOne({});
+        var juan1_c = cursor.findOne(function (e) { return true; });
+        var juan1_d = cursor.findOne(function (e) { return e.name.indexOf("juan") >= 0; });
+        var juan1_e = cursor.findOne({name: "juan1", total: 10});
+        var juan2   = cursor.findOne({name: "juan2", total: 20});
+        var juan3   = cursor.findOne({name: "juan3", total: 30});
+        var nothing = cursor.findOne({name: "juan1", total: 30});
+        
+        assert.deepEqual(juan1_a.total, 10,   "juan1_a.total = 10");
+        assert.deepEqual(juan1_b.total, 10,   "juan1_b.total = 10");
+        assert.deepEqual(juan1_c.total, 10,   "juan1_c.total = 10");
+        assert.deepEqual(juan1_d.total, 10,   "juan1_d.total = 10");
+        assert.deepEqual(juan1_e.total, 10,   "juan1_e.total = 10");
+        assert.deepEqual(juan2.total,   20,   "juan2.total = 20");
+        assert.deepEqual(juan3.total,   30,   "juan3.total = 30");
+        assert.deepEqual(nothing,       null, "no matching document");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.sort()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        assert.throws(function () { db[collection].find().sort()               }, "exception: no arguments");
+        assert.throws(function () { db[collection].find().sort(null)           }, "exception: null");
+        assert.throws(function () { db[collection].find().sort(1234)           }, "exception: a number");
+        assert.throws(function () { db[collection].find().sort({})             }, "exception: an object");
+        assert.throws(function () { db[collection].find().sort(function () {}) }, "exception: an function");
+
+        db[collection].insert({name: "juan03", category: "A", total: 10});
+        db[collection].insert({name: "juan09", category: "A", total: 9});
+        db[collection].insert({name: "juan02", category: "B", total: 8});
+        db[collection].insert({name: "juan08", category: "B", total: 7});
+        db[collection].insert({name: "juan10", category: "C", total: 6});
+        db[collection].insert({name: "juan01", category: "C", total: 5});
+        db[collection].insert({name: "juan05", category: "D", total: 4});
+        db[collection].insert({name: "juan07", category: "D", total: 3});
+        db[collection].insert({name: "juan04", category: "E", total: 2});
+        db[collection].insert({name: "juan06", category: "E", total: 1});
+
+        var checkSort = function (cursor, index, name) {
+            for (var i = 0; i < cursor.length; i++) {
+                assert.ok(cursor[i].total === index[i], name + "[" + i +"] is OK");
+            }
+        };
+
+        var cursor1 = db[collection].find().sort("name");
+        var index1 = [5, 8, 10, 2, 4, 1, 3, 7, 9, 6];
+        checkSort(cursor1, index1, "cursor1");
+
+        var cursor2 = db[collection].find().sort("total");
+        var index2 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        checkSort(cursor2, index2, "cursor2");
+
+        var cursor3 = db[collection].find().sort("category ASC, total ASC");
+        var index3 = [9, 10, 7, 8, 5, 6, 3, 4, 1, 2];
+        checkSort(cursor3, index3, "cursor3");
+
+        var cursor4 = db[collection].find().sort("category DESC, total DESC");
+        var index4 = [2, 1, 4, 3, 6, 5, 8, 7, 10, 9];
+        checkSort(cursor4, index4, "cursor4");
+
+        var cursor5 = db[collection].find().sort("category ASC, total DESC");
+        var index5 = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1];
+        checkSort(cursor5, index5, "cursor5");
+
+        cursor1.sort("total");
+        assert.deepEqual(cursor1[0].name, "juan01", "cursor is inmutable");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.first()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        db[collection].insert({name: "juan1", total: 10});
+        db[collection].insert({name: "juan2", total: 20});
+        db[collection].insert({name: "juan3", total: 30});
+
+        var cursor1 = db[collection].find();
+        var cursor2 = db[collection].find(function (e) { return e.name === "juan2" || e.name === "juan3"; });
+        var cursor3 = db[collection].find({name: "juan3"});
+
+        assert.throws(function () { cursor1.first({}); }, "exception: arguments aren't allowed");
+
+        var juan1 = cursor1.first();
+        var juan2 = cursor2.first();
+        var juan3 = cursor3.first();
+        
+        assert.deepEqual(juan1.name, "juan1", "cursor1.first() = juan1");
+        assert.deepEqual(juan2.name, "juan2", "cursor2.first() = juan2");
+        assert.deepEqual(juan3.name, "juan3", "cursor3.first() = juan3");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.last()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        db[collection].insert({name: "juan1", total: 10});
+        db[collection].insert({name: "juan2", total: 20});
+        db[collection].insert({name: "juan3", total: 30});
+
+        var cursor1 = db[collection].find({name: "juan1"});
+        var cursor2 = db[collection].find(function (e) { return e.name === "juan1" || e.name === "juan2"; });
+        var cursor3 = db[collection].find({name: "juan3"});
+
+        assert.throws(function () { cursor1.last({}); }, "exception: arguments aren't allowed");
+
+        var juan1 = cursor1.last();
+        var juan2 = cursor2.last();
+        var juan3 = cursor3.last();
+        
+        assert.deepEqual(juan1.name, "juan1", "cursor1.last() = juan1");
+        assert.deepEqual(juan2.name, "juan2", "cursor2.last() = juan2");
+        assert.deepEqual(juan3.name, "juan3", "cursor3.last() = juan3");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.pretty()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        var doc1 = db[collection].insert({name: "juan1"});
+        var doc2 = db[collection].insert({name: "juan2"});
+        var doc3 = db[collection].insert({name: "juan3"});
+        var doc4 = db[collection].insert({name: "juan4"});
+        var doc5 = db[collection].insert({name: "juan5"});
+        var doc6 = db[collection].insert({name: "juan6"});
+
+        var cursor = db[collection].find();
+
+        assert.throws(function () { cursor.pretty({}); },  "exception: arguments aren't allowed");
+        assert.deepEqual(typeof cursor.pretty(), "string", "typeof pretty() is a string");
+        assert.ok(cursor.pretty().indexOf("juan1") >= 0,   "pretty() contains juan1");
+        assert.ok(cursor.pretty().indexOf("juan2") >= 0,   "pretty() contains juan2");
+        assert.ok(cursor.pretty().indexOf("juan3") >= 0,   "pretty() contains juan3");
+        assert.ok(cursor.pretty().indexOf("juan4") >= 0,   "pretty() contains juan4");
+        assert.ok(cursor.pretty().indexOf("juan5") >= 0,   "pretty() contains juan5");
+        assert.ok(cursor.pretty().indexOf("juan6") >= 0,   "pretty() contains juan6");
+      });
+
+      QUnit.test("MonguitoDB.Cursor.count()", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        var doc1 = db[collection].insert({name: "juan1"});
+        var doc2 = db[collection].insert({name: "juan2"});
+        var doc3 = db[collection].insert({name: "juan3"});
+        var doc4 = db[collection].insert({name: "juan4"});
+        var doc5 = db[collection].insert({name: "juan5"});
+        var doc6 = db[collection].insert({name: "juan6"});
+
+        var cursor = db[collection].find();
+
+        assert.throws(function () { cursor.count({}); },     "exception: arguments aren't allowed");
+        assert.ok(util.isValidNaturalNumber(cursor.count()), "count() returns a natural number");
+        assert.ok(cursor.count(), 6, "count() = 6");
+      });
+
+      QUnit.test("Testing complex scenarios", function (assert) {
+        var db = new MonguitoDB(storage, collection);
+        db[collection].remove();
+
+        db[collection].insert({name: "juan"}).update({name: "juan david"}).update({name: "juan david cuartas"});
+        assert.deepEqual(db[collection].findOne().name, "juan david cuartas", "insert().update().update()");
+
+        db[collection].insert({name: "juan"}).update({name: "juan david"}).remove();
+        assert.deepEqual(db[collection].find({name: "juan david"}).count(), 0, "insert.update().remove()");
+
+        db[collection].remove();
+        db[collection].insert({name: "juan01", category: "A", total: 4});
+        db[collection].insert({name: "juan02", category: "A", total: 3});
+        db[collection].insert({name: "juan03", category: "A", total: 2});
+        db[collection].insert({name: "juan04", category: "B", total: 1});
+        db[collection].insert({name: "juan05", category: "B", total: 5});
+        db[collection].insert({name: "juan06", category: "B", total: 6});
+        db[collection].insert({name: "juan07", category: "B", total: 7});
+        db[collection].insert({name: "juan08", category: "C", total: 10});
+        db[collection].insert({name: "juan09", category: "C", total: 9});
+        db[collection].insert({name: "juan10", category: "C", total: 8});
+
+        var cursor1 = db[collection].find();
+        var cursor2 = cursor1.find({category: "A"});
+        var cursor3 = cursor2.find({total: 3});
+        var cursor4 = cursor3.find({other: "..."});
+
+        assert.deepEqual(cursor4.count(), 0,  "cursor4.count() = 0");
+        assert.deepEqual(cursor3.count(), 1,  "cursor3.count() = 1");
+        assert.deepEqual(cursor2.count(), 3,  "cursor2.count() = 2");
+        assert.deepEqual(cursor1.count(), 10, "cursor1.count() = 10");
+
+        var cursor5 = db[collection]
+                     .find()
+                     .sort("category DESC, total ASC")
+                     .find(function (e) { return e.category !== "B" })
+                     .find({category: "C"})
+                     .sort("name DESC");
+
+        assert.deepEqual(cursor5[0].name, "juan10",  "cursor5[0].name = juan10");
+        assert.deepEqual(cursor5[1].name, "juan09",  "cursor5[1].name = juan09");
+        assert.deepEqual(cursor5[2].name, "juan08",  "cursor5[2].name = juan08");
+      });
+    };
+
+    QUnit.module("memoryStorage");
+    runTests(null, "orders");
+    QUnit.module("sessionStorage");
+    runTests(sessionStorage, "orders");
+    QUnit.module("localStorage");
+    runTests(localStorage, "orders");
+    
+  </script>
+</body>
+</html>

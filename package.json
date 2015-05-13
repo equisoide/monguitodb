@@ -1,0 +1,56 @@
+{
+  "name": "MonguitoDB",
+  "description": "Utility to perform CRUD operations over the localStorage and sessionStorage",
+  "version": "0.0.1",
+  "homepage": "http://juancuartas.com/monguitodb/index.html",
+  "author": {
+    "name": "Juan Cuartas",
+    "email": "equisoide@gmail.com",
+    "url": "http://juancuartas.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/equisoide/monguitodb.git"
+  },
+  "bugs": {
+    "email": "equisoide@gmail.com"
+  },
+  "license": "MIT",
+  "keywords": [
+    "crud",
+    "localstorage",
+    "sessionstorage",
+    "mongodb",
+    "sql"
+  ],
+  "config": {},
+  "directories": {
+    "demo": "./demo",
+    "doc": "./doc",
+    "lib": "./lib",
+    "src": "./src",
+    "test": "./test"
+  },
+  "files": [
+    "demo",
+    "doc",
+    "lib",
+    "src",
+    "test",
+    "LICENSE",
+    "README.md"
+  ],
+  "main": "./lib/monguito-db.js",
+  "buildName": "monguito-db",
+  "devDependencies": {
+    "qunitjs": "^1.18.0"
+  },
+  "dependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-concat": "^0.5.1",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-contrib-qunit": "^0.7.0",
+    "grunt-contrib-uglify": "^0.9.1",
+    "grunt-jsdoc": "^0.5.8"
+  }
+}

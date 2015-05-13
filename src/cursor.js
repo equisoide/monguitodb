@@ -1,0 +1,318 @@
+/**
+ * A cursor is a set of documents. It can be manipulated as an array plus the
+ * following actions: update, remove, get, find, findOne, sort, first, last,
+ * pretty, count.<br><br>
+ *
+ * Cursors are initialized by {@link Collection}.find(), so, don't initialize
+ * cursors by yourself!
+ *
+ * @example
+ *    var db     = new MonguitoDB(localStorage, "orders");
+ *    var cursor = db.orders.find({recipient: "Juan"});
+ *
+ * @author  Juan Cuartas
+ * @version 0.0.1, Jun 2014
+ *
+ * @constructor
+ */
+function Cursor(collection) {
+
+	// PRIVATE METHODS:
+    // ------------------------------------------------------------------------
+
+	/**
+     * Adds functions to manipulate the passed-in collection, specifically:
+     * update, remove, get, find, findOne, sort, first, last, pretty, count.
+     *
+     * @private
+     */
+    var _addBehaviour = function () {
+        if (collection) {
+        	collection.update  = _update;
+			collection.remove  = _remove;
+            collection.get     = _get;
+			collection.find    = _find;
+			collection.findOne = _findOne;
+			collection.sort   = _sort;
+			collection.first   = _first;
+			collection.last    = _last;
+			collection.pretty  = _pretty;
+			collection.count   = _count;
+		}
+
+		return collection;
+    };
+    
+    // PUBLIC METHODS:
+    // ------------------------------------------------------------------------
+
+    /**
+     * Updates all documents in this cursor (changes are applied both in the
+     * cursor and the storage).<br><br>
+     *
+     * NOTE: _id property can't be modified.
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Updates all orders belonging to "Juan" with status "Delivered".
+     *    cursor.update({status: "Delivered"});
+     *
+     * @param  {?object} obj - The modifications to apply (_id is omitted).
+     * @return {Cursor}
+     * @alias  Cursor#update
+     * @public
+     */
+    var _update = function (obj) {
+        if (obj !== undefined) {
+            var path = "MonguitoDB.Cursor.update()";
+            util.validateArguments(arguments, 1, path);
+            util.validateObject(obj, "arg[0]:obj", path);
+        }
+
+        collection.forEach(function (doc) {
+            doc.update(obj);
+        });
+
+        return collection;
+    };
+
+    /**
+     * Removes all documents in this cursor (changes are applied both in the
+     * cursor and the storage).<br><br>
+     *
+     * NOTE: Once you call remove() on a cursor the cursor will be empty.
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Removes all orders belonging to "Juan".
+     *    cursor.remove();
+     *
+     * @alias  Cursor#remove
+     * @public
+     */
+    var _remove = function () {
+        var path = "MonguitoDB.Cursor.remove()";
+        util.validateArguments(arguments, 0, path);
+
+        collection.forEach(function (doc) {
+            doc.remove();
+        });
+
+        collection.length = 0;
+    };
+
+    /**
+     * Gets the {@link Document} within this cursor matching the specified _id.
+     * If there is no matching document within this cursor, it will be returned
+     * null.<br><br>
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Gets the order belonging to "Juan" with _id = 1.
+     *    var order = cursor.get(1);
+     *
+     * @param  {number|string} documentId - Document _id.
+     * @return {Document|null}
+     * @alias  Cursor#get
+     * @public
+     */
+    var _get = function (documentId) {
+        var path = "MonguitoDB.Cursor.get()";
+        util.validateArguments(arguments, 1, path);
+        util.validateDocumentId(documentId, "arg[0]:documentId", path);
+        
+        return collection.findOne({_id: documentId});
+    };
+
+    /**
+     * Retrieves all documents within this cursor that match the specified
+     * query.<br><br>
+     *
+     * NOTE: This function creates and returns a new cursor (the original one
+     *       won't be modified).
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Gets all orders belonging to "Juan" with status "Pending".
+     *    var pending = cursor.find({status: "Pending"});
+     *
+     *    // Gets all orders belonging to "Juan" with total >= 1000.
+     *    var expensive = cursor.find(function (e) { return e.total >= 1000; });
+     *
+     * @param  {?(object|function)} query - Specifies selection criteria.
+     * @return {Cursor}
+     * @alias  Cursor#find
+     * @public
+     */
+    var _find = function (query) {
+        if (query !== undefined) {
+            var path = "MonguitoDB.Cursor.find()";
+            util.validateArguments(arguments, 1, path);
+            util.validateObjectOrFunction(query, "arg[0]:query", path);
+        }
+
+        return Cursor(util.filterArray(collection, query));
+    };
+
+    /**
+     * Returns a {@link Document} within this cursor matching the specified
+     * query. If multiple documents satisfy the query, it will be returned the
+     * first document found. If there is no matching document within this
+     * cursor, it will be returned null.<br><br>
+     * 
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Gets the order belonging to "Juan" with number "107-1".
+     *    var order = cursor.findOne({number: "107-1"});
+     *
+     *    // Another way to do the same above.
+     *    var order = cursor.findOne(function (e) { return e.number === "107-1"});
+     *
+     * @param  {?(object|function)} query - Specifies selection criteria.
+     * @return {Document|null}
+     * @alias  Cursor#findOne
+     * @public
+     */
+    var _findOne = function (query) {
+        if (query !== undefined) {
+            var path = "MonguitoDB.Cursor.findOne()";
+            util.validateArguments(arguments, 1, path);
+            util.validateObjectOrFunction(query, "arg[0]:query", path);
+        }
+
+        return util.firstInArray(
+            util.filterArray(collection, query)
+        );
+    };
+
+    /**
+     * Sorts the current cursor and returns a reference to the new sorted
+     * cursor.<br><br>
+     *
+     * NOTE: This function creates and returns a new cursor (the original one
+     *       won't be modified).
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Sorts the documents by seller (Default sort direction is ascending).
+     *    orders = cursor.sort("seller");
+     *
+     *    // Sorts the documents by seller and total.
+     *    orders = cursor.sort("seller, total");
+     *
+     *    // Sorts the documents by seller (ascending) and total (descending).
+     *    orders = cursor.sort("seller ASC, total DESC");
+     *
+     * @param  {string} sortExpression - Sort expression (You can use ASC or
+     *    DESC to specify sort direction.
+     * @return {Cursor}
+     * @alias  Cursor#sort
+     * @public
+     */
+    var _sort = function (sortExpression) {
+        var path = "MonguitoDB.Cursor.sort()";
+        util.validateArguments(arguments, 1, path);
+        util.validateString(sortExpression, "arg[0]:sortExpression", path);
+        
+        return Cursor(util.sortArray(collection, sortExpression));
+    };
+
+    /**
+     * Returns the first {@link Document} within this cursor. If the cursor
+     * is empty, it will be returned null.
+     * 
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Gets the first order belonging to "Juan".
+     *    var order = cursor.first();
+     *
+     * @return {Document|null}
+     * @alias  Cursor#first
+     * @public
+     */
+    var _first = function () {
+        var path = "MonguitoDB.Cursor.first()";
+        util.validateArguments(arguments, 0, path);
+
+        return util.firstInArray(collection);
+    };
+
+    /**
+     * Returns the last {@link Document} within this cursor. If the cursor
+     * is empty, it will be returned null.
+     * 
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Gets the last order belonging to "Juan".
+     *    var order = cursor.last();
+     *
+     * @return {Document|null}
+     * @alias  Cursor#last
+     * @public
+     */
+    var _last = function () {
+        var path = "MonguitoDB.Cursor.last()";
+        util.validateArguments(arguments, 0, path);
+
+        return util.lastInArray(collection);
+    };
+
+    /**
+     * Gets a "pretty" JSON representation of this cursor.
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Prints all orders belonging to "Juan".
+     *    console.log(cursor.pretty());
+     *
+     * @alias Cursor#pretty
+     * @public
+     */
+    var _pretty = function () {
+        var path = "MonguitoDB.Cursor.pretty()";
+        util.validateArguments(arguments, 0, path);
+
+        return util.prettyJSON(collection);
+    };
+
+    /**
+     * Counts the number of documents within this cursor.
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var cursor = db.orders.find({recipient: "Juan"});
+     *
+     *    // Counts the number of orders belonging to "Juan"
+     *    var count  = cursor.count();
+     *
+     * @return {number}
+     * @alias  Cursor#count
+     * @public
+     */
+    var _count = function () {
+        var path = "MonguitoDB.Cursor.count()";
+        util.validateArguments(arguments, 0, path);
+
+        return collection.length;
+    };
+
+    return _addBehaviour();
+}

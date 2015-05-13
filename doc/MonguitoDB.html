@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: MonguitoDB</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Class: MonguitoDB</h1>
+    
+    
+
+
+
+<section>
+    
+<header>
+    <h2>
+    MonguitoDB
+    </h2>
+    
+</header>  
+
+<article>
+    <div class="container-overview">
+    
+    
+    
+        
+<dt>
+    <h4 class="name" id="MonguitoDB"><span class="type-signature"></span>new MonguitoDB<span class="signature">(storage, collections)</span><span class="type-signature"></span></h4>
+    
+    
+</dt>
+<dd>
+    
+    
+    <div class="description">
+        Utility to perform CRUD operations over the localStorage, sessionStorage, orany object implementing the Storage Interface defined by the W3C.<br><br>This library was inspired by MongoDB, and some of its functions aresyntactically similar to how they are in Mongo, with some differencesand limitations.<br><br>NOTE: This utility works synchronously.
+    </div>
+    
+
+    
+    
+    
+    
+    
+        <h5>Parameters:</h5>
+        
+
+<table class="params">
+    <thead>
+	<tr>
+		
+		<th>Name</th>
+		
+		
+		<th>Type</th>
+		
+		
+		
+		
+		
+		<th class="last">Description</th>
+	</tr>
+	</thead>
+	
+	<tbody>
+	
+	
+        <tr>
+            
+                <td class="name"><code>storage</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+|
+
+<span class="param-type">null</span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Object providing the storage mechanism. You   can send localStorage or sessionStorage if the browser supports HTML5.   Send null to use the default mechanism which stores collections in memory.   Alternatively, you can send your own object implementing the Storage   Interface defined by the W3C.</td>
+        </tr>
+	
+	
+	
+        <tr>
+            
+                <td class="name"><code>collections</code></td>
+            
+            
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+|
+
+<span class="param-type">Array.&lt;string></span>
+
+
+            
+            </td>
+            
+            
+            
+            
+            
+            <td class="description last">Array containing the names of the   collections to be manipulated (analogous to tables in a relational   database). You can send a single name, or an array of names if you want   to manipulate several collections.</td>
+        </tr>
+	
+	
+	</tbody>
+</table>
+    
+    
+    
+<dl class="details">
+    
+        
+    
+    <dt class="tag-version">Version:</dt>
+    <dd class="tag-version"><ul class="dummy"><li>0.0.1, Jun 2014</li></ul></dd>
+    
+    
+    
+
+    
+    
+    
+    
+    
+    <dt class="tag-author">Author:</dt>
+    <dd class="tag-author">
+        <ul>
+            <li>Juan Cuartas</li>
+        </ul>
+    </dd>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="monguito-db.js.html">monguito-db.js</a>, <a href="monguito-db.js.html#line38">line 38</a>
+    </li></ul></dd>
+    
+    
+    
+    
+    
+    <dt class="tag-see">See:</dt>
+    <dd class="tag-see">
+        <ul>
+            <li><a href="http://www.w3.org/TR/webstorage/#the-storage-interface">http://www.w3.org/TR/webstorage/#the-storage-interface</a></li>
+        
+            <li><a href="Collection.html">Collection</a></li>
+        </ul>
+    </dd>
+    
+    
+    
+</dl>
+
+    
+    
+
+    
+
+    
+    
+    
+    
+    
+    
+    
+        <h5>Example</h5>
+        
+    <pre class="prettyprint"><code>   // An object to perform CRUD operations over the HTML5 localStorage.   var db = new MonguitoDB(localStorage, "orders");   // An object to perform CRUD operations over the HTML5 sessionStorage.   var db = new MonguitoDB(sessionStorage, ["orders", "users"]);   // An object to perform CRUD operations over collections stored in memory.   var db = new MonguitoDB(null, ["orders", "users"]);</code></pre>
+
+    
+</dd>
+
+    
+    </div>
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+</article>
+
+</section>  
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Collection.html">Collection</a></li><li><a href="Cursor.html">Cursor</a></li><li><a href="Document.html">Document</a></li><li><a href="MonguitoDB.html">MonguitoDB</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue May 12 2015 21:39:10 GMT-0500 (COT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

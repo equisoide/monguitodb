@@ -1,0 +1,70 @@
+<!Doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>memory-storage.js Test</title>
+  <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+  <script src="../src/memory-storage.js"></script>
+  <script>
+
+    var storage = new MemoryStorage();
+
+    QUnit.test("Empty list", function (assert) {
+      assert.deepEqual(storage.length, 0, "length");
+      assert.deepEqual(storage.key(0), null, "key(0)");
+      assert.deepEqual(storage.getItem("test"), null, "getItem('test')");
+    });
+
+    QUnit.test("10 items added", function (assert) {
+      for (var i = 0; i < 10; i++) {
+        storage.setItem("item" + i, i*i);
+      }
+      assert.deepEqual(storage.length, 10, "length");
+      for (var i = 0; i < 10; i++) {
+        assert.deepEqual(storage.key(i), "item" + i, "key(" + i + ")");
+      }
+      for (var i = 0; i < 10; i++) {
+        assert.deepEqual(storage.getItem("item" + i), (i*i) + "", "getItem('item" + i + "')");
+      }
+    });
+
+    QUnit.test("5 items removed", function (assert) {
+      for (var i = 0; i < 5; i++) {
+        storage.removeItem("item" + i);
+      }
+      assert.deepEqual(storage.length, 5, "length");
+      for (var i = 0; i < 10; i++) {
+        if (i < 5) {
+          assert.deepEqual(storage.key(i), "item" + (i + 5), "key(" + i + ")");
+        } else {
+          assert.deepEqual(storage.key(i), null, "key(" + i + ")");
+        }
+      }
+      for (var i = 0; i < 10; i++) {
+        if (i < 5) {
+          assert.deepEqual(storage.getItem("item" + i), null, "getItem('item" + i + "')");
+        } else {
+          assert.deepEqual(storage.getItem("item" + i), (i*i) + "", "getItem('item" + i + "')");
+        }
+      }
+    });
+
+    QUnit.test("Clear list", function (assert) {
+      storage.clear();
+      assert.deepEqual(storage.length, 0, "length");
+      for (var i = 0; i < 10; i++) {
+        assert.deepEqual(storage.key(i), null, "key(" + i + ")");
+      }
+      for (var i = 0; i < 10; i++) {
+        assert.deepEqual(storage.getItem("item" + i), null, "getItem('item" + i + "')");
+      }
+    });
+    
+  </script>
+</body>
+</html>

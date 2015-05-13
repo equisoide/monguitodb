@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: collection.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: collection.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * A collection is a set of documents. It is equivalent to a table in the
+ * relational world, with the difference that a collection does not enforce
+ * a schema.&lt;br>&lt;br>
+ *
+ * The following actions can be performed on a Collection: insert, update,
+ * remove, get, find, findOne, count.&lt;br>&lt;br>
+ *
+ * Collections are initialized by MonguitoDB() constructor, so, don't
+ * initialize collections by yourself!
+ *
+ * @example
+ *    // The following code shows how to reference collections initialized by
+ *    // MonguitoDB() constructor.
+ *    var db = new MonguitoDB(localStorage, ["orders", "users"]);
+ *
+ *    var ordersCollection = db.orders;
+ *    var usersCollection  = db.users;
+ *
+ * @author  Juan Cuartas
+ * @see     Document
+ * @see     Cursor
+ * @version 0.0.1, Jun 2014
+ *
+ * @constructor
+ */
+function Collection(storage, collectionName) {
+
+    // PRIVATE METHODS:
+    // ------------------------------------------------------------------------
+
+    /**
+     * Gets the key used to store a document in this collection.
+     *
+     * @param  {number} documentId - Document _id.
+     * @return {string}
+     * @private
+     */
+    var _getKey = function (documentId) {
+        if (util.isValidUUID(documentId)) {
+            return documentId;
+        } else {
+            return  collectionName + "-" + documentId;
+        }
+    };
+
+    /**
+     * Gets the configuration regarding to this collection.
+     *
+     * @return {{identity: number, ids: object[]}}
+     * @private
+     */
+    var _getConfig = function () {
+        var config = storage.getItem(collectionName);
+        
+        if (config === null) {
+            config = {
+                identity: 1,
+                ids: []
+            };
+        } else {
+            config = JSON.parse(config);
+        }
+
+        config.save = function () {
+            var json = JSON.stringify(this);
+            storage.setItem(collectionName, json);
+        };
+
+        return config;
+    };
+
+    // PUBLIC METHODS:
+    // ------------------------------------------------------------------------
+    
+    /**
+     * Inserts a new object into this collection and returns a reference to
+     * the inserted {@link Document}.&lt;br>&lt;br>
+     *
+     * NOTE: _id property is the document's "primary key" wich is automatically
+     *       assigned. It can be of two types:&lt;br>
+     *       1) Auto-numeric: when _id is omitted in the passed-in obj.&lt;br>
+     *       2) UUID: When _id is set to "uuid" in the passed-in obj.
+     *
+     * @example
+     *    var db = new MonguitoDB(localStorage, "orders");
+     *
+     *    // case 1) _id will be automatically assigned as an auto-numeric value.
+     *    var order = db.orders.insert({recipient: "Juan", total: 50});
+     *    var documentId = order._id;
+     *
+     *    // case 2) _id will be automatically assigned as an UUID.
+     *    var order = db.orders.insert({_id: "uuid", recipient: "Juan", total: 50});
+     *    var documentId = order._id;
+     *
+     * @param  {object} obj - Document to insert into the collection.
+     * @return {Document}
+     * @alias  Collection#insert
+     * @public
+     */
+    var _insert = function (obj)  {
+        var path = "MonguitoDB.Collection.insert()";
+        util.validateArguments(arguments, 1, path);
+        util.validateObject(obj, "arg[0]:obj", path);
+
+        var config = _getConfig();
+
+        if (obj.hasOwnProperty("_id")) {
+            if (obj._id === "uuid") {
+                obj._id = util.generateUUID();
+            } else {
+                throw new TypeError(
+                    path + ", invalid _id value, only 'uuid' is allowed."
+                );
+            }
+        } else {
+            obj._id = config.identity++;
+        }
+
+        var key  = _getKey(obj._id);
+        var json = JSON.stringify(obj);
+        storage.setItem(key, json);
+
+        config.ids.push(obj._id);
+        config.save();
+
+        return Document(obj, storage, _getConfig, _getKey);
+    };
+
+    /**
+     * Gets the {@link Document} that matches the specified _id. If there is
+     * no matching document within this collection, it will be returned
+     * null.&lt;br>&lt;br>
+     *
+     * The following actions can be performed on the returned document:
+     * update, remove, pretty.&lt;br>&lt;br>
+     *
+     * NOTE: get() is faster than find() and findOne().
+     *
+     * @example
+     *    var db    = new MonguitoDB(localStorage, "orders");
+     *    var order = db.orders.get(1);
+     *
+     *    console.log(order.pretty());         // Prints the document.
+     *    order.update({status: "Delivered"}); // Updates the document.
+     *    order.remove();                      // Removes the document.
+     *
+     * @param  {number|string} documentId - Document _id.
+     * @return {Document|null}
+     * @alias  Collection#get
+     * @public
+     */
+    var _get = function (documentId) {
+        var path = "MonguitoDB.Collection.get()";
+        util.validateArguments(arguments, 1, path);
+        util.validateDocumentId(documentId, "arg[0]:documentId", path);
+
+        var key  = _getKey(documentId);
+        var json = storage.getItem(key);
+
+        if (json !== null) {
+            var obj = JSON.parse(json);
+            return Document(obj, storage, _getConfig, _getKey);
+        } else {
+            return null;
+        }
+    };
+    
+    /**
+     * Retrieves all documents in this collection matching the specified query.
+     * If no query is passed-in, all documents will be returned.&lt;br>&lt;br>
+     *
+     * This function returns a {@link Cursor} that can be manipulated as an
+     * array plus the following actions: update, remove, get, find, findOne,
+     * sort, first, last, pretty, count.
+     *
+     * @example
+     *    var db     = new MonguitoDB(localStorage, "orders");
+     *    var orders = db.orders.find();
+     *
+     *    // Each element in the cursor is of type {@link Document}
+     *    orders.forEach(function (order) {
+     *        console.log(order.pretty());
+     *    });
+     *
+     *    // Applying conditions to retrieve the data.
+     *    orders = db.orders.find({status: "Delivered"});
+     *    orders = db.orders.find({status: "Delivered", seller: "Armani"});
+     *    orders = db.orders.find(function (e) { return e.total > 700; });
+     *
+     *    // Sorting the data.
+     *    orders = db.orders.find().sort("seller");
+     *    orders = db.orders.find().sort("seller, total");
+     *    orders = db.orders.find().sort("seller ASC, total DESC");
+     *
+     *    // Executing many actions in cascade.
+     *    var firstOrder = db.orders.find().sort("total").first();
+     *    var lastOrder  = db.orders.find().sort("total").last();
+     *
+     *    // Printing the whole collection.
+     *    console.log(db.orders.find().pretty());
+     *
+     * @param  {?(object|function)} query - Specifies selection criteria.
+     * @return {Cursor}
+     * @alias  Collection#find
+     * @public
+     */
+    var _find = function (query) {
+        if (query !== undefined) {
+            var path = "MonguitoDB.Collection.find()";
+            util.validateArguments(arguments, 1, path);
+            util.validateObjectOrFunction(query, "arg[0]:query", path);
+        }
+
+        var documents = [];
+
+        _getConfig().ids.forEach(function (documentId) {
+            documents.push(_get(documentId));
+        });
+
+        if (typeof query !== "undefined") {
+            documents = util.filterArray(documents, query);
+        }
+
+        return Cursor(documents);
+    };
+    
+    /**
+     * Returns a {@link Document} that satisfies the specified query. If
+     * multiple documents satisfy the query, it will be returned the first
+     * document found (according to insertion order). If there is
+     * no matching document within this collection, it will be returned
+     * null.&lt;br>&lt;br>
+     *
+     * The following actions can be performed on the returned document:
+     * update, remove, pretty.
+     * 
+     * @example
+     *    var db    = new MonguitoDB(localStorage, "orders");
+     *    var order = db.orders.findOne({recipient: "Juan"});
+     *    
+     *    console.log(order.pretty());         // Prints the document.
+     *    order.update({status: "Delivered"}); // Updates the document.
+     *    order.remove();                      // Removes the document.
+     *
+     *    // Using findOne() with a function criteria.
+     *    var order = db.orders.findOne(function (e) { return e.total > 0; });
+     *
+     * @param  {?(object|function)} query - Specifies selection criteria.
+     * @return {Document|null}
+     * @alias  Collection#findOne
+     * @public
+     */
+    var _findOne = function (query) {
+        if (query !== undefined) {
+            var path = "MonguitoDB.Collection.findOne()";
+            util.validateArguments(arguments, 1, path);
+            util.validateObjectOrFunction(query, "arg[0]:query", path);
+        }
+        
+        return _find(query).first();
+    };
+
+    /**
+     * Counts the number of documents in this collection.
+     *
+     * @example
+     *    var db    = new MonguitoDB(localStorage, "orders");
+     *    var count = db.orders.count();
+     *
+     * @return {number}
+     * @alias  Collection#count
+     * @public
+     */
+    var _count = function () {
+        util.validateArguments(arguments, 0, "MonguitoDB.Collection.count()");
+        return _getConfig().ids.length;
+    };
+
+    /**
+     * Updates one or several documents in the current collection and returns
+     * a {@link Cursor} containing the updated documents.&lt;br>&lt;br>
+     *
+     * NOTE: _id property can't be modified.
+     *
+     * @example
+     *    var db = new MonguitoDB(localStorage, "orders");
+     *
+     *    // Updates a single document (that one matching _id = 1).
+     *    db.orders.update({_id: 1}, {status: "Delivered"});
+     *
+     *    // Updates several documents (those matching recipient = "Juan").
+     *    db.orders.update({recipient: "Juan"}, {status: "Delivered"});
+     *
+     * @param  {object|function} query - Selection criteria for the update.
+     * @param  {object} obj - The modifications to apply (_id is omitted).
+     * @return {Cursor}
+     * @alias  Collection#update
+     * @public
+     */
+    var _update = function (query, obj) {
+        var path = "MonguitoDB.Collection.update()";
+        util.validateArguments(arguments, 2, path);
+        util.validateObjectOrFunction(query, "arg[0]:query", path);
+        util.validateObject(obj, "arg[1]:obj", path);
+
+        var documents = _find(query);
+
+        documents.forEach(function (doc) {
+            doc.update(obj);
+        });
+
+        return documents;
+    };
+    
+    /**
+     * Removes one or several documents from the current collection.&lt;br>&lt;br>
+     *
+     * NOTE: If no query is passed-in, all documents will be removed.
+     *
+     * @example
+     *    var db = new MonguitoDB(localStorage, "orders");
+     *
+     *    // Removes a single document (that one matching _id = 1).
+     *    db.orders.remove({_id: 1});
+     *
+     *    // Removes several documents (those matching recipient = "Juan").
+     *    db.orders.remove({recipient: "Juan"});
+     *
+     *    // Removes all documents.
+     *    db.orders.remove();
+     *
+     * @param  {?(object|function)} query - Selection criteria for the remove.
+     * @alias  Collection#remove
+     * @public
+     */
+    var _remove = function (query) {
+        if (query !== undefined) {
+            var path = "MonguitoDB.Collection.remove()";
+            util.validateArguments(arguments, 1, path);
+            util.validateObjectOrFunction(query, "arg[0]:query", path);
+        }
+
+        _find(query).forEach(function (doc) {
+            doc.remove();
+        });
+    };
+    
+    return {
+        insert:  _insert,
+        get:     _get,
+        find:    _find,
+        findOne: _findOne,
+        count:   _count,
+        update:  _update,
+        remove:  _remove
+    };
+}</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="Collection.html">Collection</a></li><li><a href="Cursor.html">Cursor</a></li><li><a href="Document.html">Document</a></li><li><a href="MonguitoDB.html">MonguitoDB</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.2</a> on Tue May 12 2015 21:39:09 GMT-0500 (COT)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

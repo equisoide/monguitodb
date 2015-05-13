@@ -1,0 +1,444 @@
+<!Doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>util.js Test</title>
+  <link rel="stylesheet" href="../node_modules/qunitjs/qunit/qunit.css">
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+  <script src="../node_modules/qunitjs/qunit/qunit.js"></script>
+  <script src="../src/util.js"></script>
+  <script>
+
+    QUnit.test("util.filterArray()", function (assert) {
+      assert.throws(
+        function () {
+          util.filterArray()
+        },
+        "validate: no arguments"
+      );
+      assert.throws(
+        function () {
+          util.filterArray(null, {filter: "some filter"})
+        },
+        "validate: null array"
+      );
+      assert.throws(
+        function () {
+          util.filterArray("this is not an array", {filter: "some filter"})
+        },
+        "validate: invalid array"
+      );
+      assert.throws(
+        function () {
+          util.filterArray([], null)
+        },
+        "validate: null filter"
+      );
+      assert.throws(
+        function () {
+          util.filterArray([], "this is an invalid filter")
+        },
+        "validate: invalid filter"
+      );
+      var array = [
+        {name: "PS4",        total: 400,  category: "consoles"},
+        {name: "Xbone",      total: 500,  category: "consoles"},
+        {name: "Wii U",      total: 300,  category: "consoles"},
+        {name: "Kindle",     total: 200,  category: "tablets"},
+        {name: "iPhone6",    total: 1000, category: "cellphones"},
+        {name: "Samsung s6", total: 800,  category: "cellphones"}
+      ];
+      var consoles = [
+        {name: "PS4",        total: 400,  category: "consoles"},
+        {name: "Xbone",      total: 500,  category: "consoles"},
+        {name: "Wii U",      total: 300,  category: "consoles"}
+      ];
+      var under500 = [
+        {name: "PS4",        total: 400,  category: "consoles"},
+        {name: "Wii U",      total: 300,  category: "consoles"},
+        {name: "Kindle",     total: 200,  category: "tablets"}
+      ];
+      var kindle = [
+        {name: "Kindle",     total: 200,  category: "tablets"},
+      ];
+      assert.deepEqual(
+        util.filterArray([], {category: "consoles"}),
+        [],
+        "filtering an empty array by an object"
+      );
+      assert.deepEqual(
+        util.filterArray([], function (e) { return e.total < 500; }),
+        [],
+        "filtering an empty array by a function"
+      );
+      assert.deepEqual(
+        util.filterArray(array),
+        array,
+        "an empty filter expression"
+      );
+      assert.deepEqual(
+        util.filterArray(array, {category: "consoles"}),
+        consoles,
+        "filtering by an object (one attribute)"
+      );
+      assert.deepEqual(
+        util.filterArray(array, {total: 200, category: "tablets"}),
+        kindle,
+        "filtering by an object (several attributes)"
+      );
+      assert.deepEqual(
+        util.filterArray(array, function (e) { return e.total < 500; }),
+        under500,
+        "filtering by a function (one condition)"
+      );
+      assert.deepEqual(
+        util.filterArray(array, function (e) { return e.total > 100 && e.total < 250; }),
+        kindle,
+        "filtering by a function (several conditions)"
+      );
+      assert.deepEqual(array.length, 6, "original array is inmutable.");
+    });
+
+    QUnit.test("util.sortArray()", function (assert) {
+      assert.throws(
+        function () {
+          util.sortArray()
+        },
+        "validate: no arguments"
+      );
+      assert.throws(
+        function () {
+          util.sortArray(null, "sortExpression")
+        },
+        "validate: null array"
+      );
+      assert.throws(
+        function () {
+          util.sortArray("this is not an array", "sortExpression")
+        },
+        "validate: invalid array"
+      );
+      assert.throws(
+        function () {
+          util.sortArray([])
+        },
+        "validate: undefined sort"
+      );
+      assert.throws(
+        function () {
+          util.sortArray([], null)
+        },
+        "validate: null sort"
+      );
+      assert.throws(
+        function () {
+          util.sortArray([], {sort: "this is an invalid sort"})
+        },
+        "validate: invalid sort"
+      );
+      var array = [
+        {name: "PS4",        total: 400,  category: "consoles"},
+        {name: "Xbone",      total: 500,  category: "consoles"},
+        {name: "Wii U",      total: 300,  category: "consoles"},
+        {name: "Kindle",     total: 200,  category: "tablets"},
+        {name: "iPhone6",    total: 1000, category: "cellphones"},
+        {name: "Samsung s6", total: 800,  category: "cellphones"}
+      ];
+      var sortByTotal = [
+        {name: "Kindle",     total: 200,  category: "tablets"},
+        {name: "Wii U",      total: 300,  category: "consoles"},
+        {name: "PS4",        total: 400,  category: "consoles"},
+        {name: "Xbone",      total: 500,  category: "consoles"},
+        {name: "Samsung s6", total: 800,  category: "cellphones"},
+        {name: "iPhone6",    total: 1000, category: "cellphones"},
+      ];
+      var sortByCategoryAndTotal = [
+        {name: "Samsung s6", total: 800,  category: "cellphones"},
+        {name: "iPhone6",    total: 1000, category: "cellphones"},
+        {name: "Wii U",      total: 300,  category: "consoles"},
+        {name: "PS4",        total: 400,  category: "consoles"},
+        {name: "Xbone",      total: 500,  category: "consoles"},
+        {name: "Kindle",     total: 200,  category: "tablets"}
+      ];
+      var sortByCategoryAndTotalDESC = [
+        {name: "iPhone6",    total: 1000, category: "cellphones"},
+        {name: "Samsung s6", total: 800,  category: "cellphones"},
+        {name: "Xbone",      total: 500,  category: "consoles"},
+        {name: "PS4",        total: 400,  category: "consoles"},
+        {name: "Wii U",      total: 300,  category: "consoles"},
+        {name: "Kindle",     total: 200,  category: "tablets"}
+      ];
+      assert.deepEqual(
+        util.sortArray([], "category ASC, total DESC"),
+        [],
+        "sortering an empty array"
+      );
+      assert.deepEqual(
+        util.sortArray(array, ""),
+        array,
+        "sortering by an empty sort expression"
+      );
+      assert.deepEqual(
+        util.sortArray(array, "total"),
+        sortByTotal,
+        "a single sort"
+      );
+      assert.deepEqual(
+        util.sortArray(array, "category, total"),
+        sortByCategoryAndTotal,
+        "a combined sort"
+      );
+      assert.deepEqual(
+        util.sortArray(array, "category ASC, total DESC"),
+        sortByCategoryAndTotalDESC,
+        "a complex sort: ASC + DESC"
+      );
+      assert.deepEqual(array[0].name, "PS4", "original array is inmutable.");
+    });
+
+    QUnit.test("util.firstInArray()", function (assert) {
+      assert.throws(
+        function () {
+          util.firstInArray()
+        },
+        "validate: no arguments"
+      );
+      assert.throws(
+        function () {
+          util.firstInArray(null)
+        },
+        "validate: null array"
+      );
+      assert.deepEqual(util.firstInArray([]), null, "empty array");
+      assert.deepEqual(util.firstInArray([3, 2, 1]), 3, "happy path: with numbers");
+      assert.deepEqual(util.firstInArray([{p:1}, {p:2}, {p:3}]), {p:1}, "happy path: with objects");
+      assert.deepEqual(util.firstInArray([null]), null, "happy path: with a null element");
+    });
+
+    QUnit.test("util.lastInArray()", function (assert) {
+      assert.throws(
+        function () {
+          util.lastInArray()
+        },
+        "validate: no arguments"
+      );
+      assert.throws(
+        function () {
+          util.lastInArray(null)
+        },
+        "validate: null array"
+      );
+      assert.deepEqual(util.lastInArray([]), null, "empty array");
+      assert.deepEqual(util.lastInArray([3, 2, 1]), 1, "happy path: with numbers");
+      assert.deepEqual(util.lastInArray([{p:1}, {p:2}, {p:3}]), {p:3}, "happy path: with objects");
+      assert.deepEqual(util.lastInArray([null]), null, "happy path: with a null element");
+    });
+
+    QUnit.test("util.isValidNaturalNumber()", function (assert) {
+      assert.deepEqual(util.isValidNaturalNumber(),               false, "validating: no parameters");
+      assert.deepEqual(util.isValidNaturalNumber(null),           false, "validating: null");
+      assert.deepEqual(util.isValidNaturalNumber(""),             false, "validating: an empty string");
+      assert.deepEqual(util.isValidNaturalNumber("hello"),        false, "validating: a non-numeric string");
+      assert.deepEqual(util.isValidNaturalNumber("12345"),        false, "validating: a numeric string");
+      assert.deepEqual(util.isValidNaturalNumber({}),             false, "validating: an object");
+      assert.deepEqual(util.isValidNaturalNumber(function () {}), false, "validating: a function");
+      assert.deepEqual(util.isValidNaturalNumber(-1),             false, "validating: a negative number");
+      assert.deepEqual(util.isValidNaturalNumber(3.1416),         false, "validating: a floating point number");
+      assert.deepEqual(util.isValidNaturalNumber(0),              true,  "validating: a valid number: 0");
+      assert.deepEqual(util.isValidNaturalNumber(100),            true,  "validating: a valid number: 100");
+    });
+
+    QUnit.test("util.isValidVariableName()", function (assert) {
+      assert.deepEqual(util.isValidVariableName(),                 false, "validating: no parameters");
+      assert.deepEqual(util.isValidVariableName(null),             false, "validating: null");
+      assert.deepEqual(util.isValidVariableName("invalid name"),   false, "validating: invalid name");
+      assert.deepEqual(util.isValidVariableName("1invalidName"),   false, "validating: 1invalidName");
+      assert.deepEqual(util.isValidVariableName("invalidChar*"),   false, "validating: invalidChar*");
+      assert.deepEqual(util.isValidVariableName("_validVariable"), true,  "validating: _validVariable");
+    });
+
+    QUnit.test("util.isValidUUID()", function (assert) {
+      assert.deepEqual(util.isValidUUID(),           false, "validating: no parameters");
+      assert.deepEqual(util.isValidUUID(null),       false, "validating: null");
+      assert.deepEqual(util.isValidUUID(1234),       false, "validating: invalid type");
+      assert.deepEqual(util.isValidUUID("1E7B9A3B"), false, "validating: invalid length");
+      assert.deepEqual(util.isValidUUID("XE7B9A3B-9D53-469F-BF4E-D056A3BE403C"), false, "validating: invalid char X");
+      assert.deepEqual(util.isValidUUID("1E7B9A3B*9D53-469F-BF4E-D056A3BE403C"), false, "validating: invalid char *");
+      assert.deepEqual(util.isValidUUID("1E7B9A3B-9D53_469F-BF4E-D056A3BE403C"), false, "validating: invalid char _");
+      assert.deepEqual(util.isValidUUID("1E7B9A3B-9D53-269F-BF4E-D056A3BE403C"), false, "validating: invalid version");
+      assert.deepEqual(util.isValidUUID("1E7B9A3B-9D53-469F-0F4E-D056A3BE403C"), false, "validating: invalid char 19");
+      assert.deepEqual(util.isValidUUID("1E7B9A3B-9D53-469F-BF4E-D056A3BE403C"), true,  "validating: a valid one!");
+    });
+
+    QUnit.test("util.isValidDocumentId()", function (assert) {
+      assert.deepEqual(util.isValidDocumentId(),      false, "validating: no parameters");
+      assert.deepEqual(util.isValidDocumentId(null),  false, "validating: null");
+      assert.deepEqual(util.isValidDocumentId({}),    false, "validating: invalid type");
+      assert.deepEqual(util.isValidDocumentId(-1),    false, "validating: invalid range");
+      assert.deepEqual(util.isValidDocumentId("..."), false, "validating: invalid format");
+      assert.deepEqual(util.isValidDocumentId(1), true,  "A valid number!");
+      assert.deepEqual(util.isValidDocumentId("1E7B9A3B-9D53-469F-BF4E-D056A3BE403C"), true,  "A valid uuid!");
+    });
+
+    QUnit.test("util.isValidStorage()", function (assert) {
+      assert.deepEqual(util.isValidStorage(),               false, "validating: no parameters");
+      assert.deepEqual(util.isValidStorage(null),           false, "validating: null");
+      assert.deepEqual(util.isValidStorage("hello"),        false, "validating: a string");
+      assert.deepEqual(util.isValidStorage(1),              false, "validating: a number");
+      assert.deepEqual(util.isValidStorage({}),             false, "validating: an object");
+      assert.deepEqual(util.isValidStorage(sessionStorage), true,  "validating: sessionStorage");
+      assert.deepEqual(util.isValidStorage(localStorage),   true,  "validating: localStorage");
+    });
+
+    QUnit.test("util.validateArguments()", function (assert) {
+      assert.throws(
+        function () {
+          util.validateArguments([1, 2, 3], 2, "QUnit");
+        },
+        "invalid number of arguments"
+      );
+      assert.deepEqual(util.validateArguments([1, 2], 2, "QUnit"), undefined, "valid number of arguments");
+    });
+
+    QUnit.test("util.validateString()", function (assert) {
+      assert.throws(
+        function () {
+          util.validateString(null, "arg[0]", "QUnit");
+        },
+        "invalid argument: null"
+      );
+      assert.throws(
+        function () {
+          util.validateString(1, "arg[0]", "QUnit");
+        },
+        "invalid argument: a number"
+      );
+      assert.throws(
+        function () {
+          util.validateString(function () {}, "arg[0]", "QUnit");
+        },
+        "invalid argument: a function"
+      );
+      assert.throws(
+        function () {
+          util.validateString([], "arg[0]", "QUnit");
+        },
+        "invalid argument: an array"
+      );
+      assert.deepEqual(util.validateString("", "arg[0]", "QUnit"), undefined, "a valid string!");
+    });
+
+    QUnit.test("util.validateObject()", function (assert) {
+      assert.throws(
+        function () {
+          util.validateObject(null, "arg[0]", "QUnit");
+        },
+        "invalid argument: null"
+      );
+      assert.throws(
+        function () {
+          util.validateObject(1, "arg[0]", "QUnit");
+        },
+        "invalid argument: a number"
+      );
+      assert.throws(
+        function () {
+          util.validateObject("", "arg[0]", "QUnit");
+        },
+        "invalid argument: a string"
+      );
+      assert.throws(
+        function () {
+          util.validateObject(function () {}, "arg[0]", "QUnit");
+        },
+        "invalid argument: a function"
+      );
+      assert.throws(
+        function () {
+          util.validateObject([], "arg[0]", "QUnit");
+        },
+        "invalid argument: an array"
+      );
+      assert.deepEqual(util.validateObject({}, "arg[0]", "QUnit"), undefined, "a valid object!");
+    });
+
+    QUnit.test("util.validateObjectOrFunction()", function (assert) {
+      assert.throws(
+        function () {
+          util.validateObjectOrFunction(null, "arg[0]", "QUnit");
+        },
+        "invalid argument: null"
+      );
+      assert.throws(
+        function () {
+          util.validateObjectOrFunction(1, "arg[0]", "QUnit");
+        },
+        "invalid argument: a number"
+      );
+      assert.throws(
+        function () {
+          util.validateObjectOrFunction("", "arg[0]", "QUnit");
+        },
+        "invalid argument: a string"
+      );
+      assert.throws(
+        function () {
+          util.validateObjectOrFunction([], "arg[0]", "QUnit");
+        },
+        "invalid argument: an array"
+      );
+      assert.deepEqual(util.validateObjectOrFunction({},             "arg[0]", "QUnit"), undefined, "a valid object!");
+      assert.deepEqual(util.validateObjectOrFunction(function () {}, "arg[0]", "QUnit"), undefined, "a valid function!");
+    });
+
+    QUnit.test("util.validateDocumentId()", function (assert) {
+      assert.throws(
+        function () {
+          util.validateDocumentId(null, "arg[0]", "QUnit");
+        },
+        "invalid argument: null"
+      );
+      assert.throws(
+        function () {
+          util.validateDocumentId({}, "arg[0]", "QUnit");
+        },
+        "invalid argument: an object"
+      );
+      assert.throws(
+        function () {
+          util.validateDocumentId(function () {}, "arg[0]", "QUnit");
+        },
+        "invalid argument: a function"
+      );
+      assert.throws(
+        function () {
+          util.validateDocumentId([], "arg[0]", "QUnit");
+        },
+        "invalid argument: an array"
+      );
+      assert.deepEqual(util.validateDocumentId(1, "arg[0]", "QUnit"), undefined, "a valid number!");
+      assert.deepEqual(util.validateDocumentId("1E7B9A3B-9D53-469F-BF4E-D056A3BE403C", "arg[0]", "QUnit"), undefined, "a valid uuid!");
+    });
+
+    QUnit.test("util.prettyJSON()", function (assert) {
+      assert.deepEqual(util.prettyJSON(),        "undefined", "undefined");
+      assert.deepEqual(util.prettyJSON(null),    "null",      "null");
+      assert.deepEqual(util.prettyJSON(1),       "1",         "number");
+      assert.deepEqual(util.prettyJSON("hello"), "hello",     "string");
+      assert.deepEqual(util.prettyJSON({}),      "{}",        "object");
+    });
+
+    QUnit.test("util.generateUUID()", function (assert) {
+      var uuid = util.generateUUID();
+      assert.deepEqual(util.isValidUUID(uuid), true, "validating format");
+      for (var i = 1; i <= 100; i++) {
+        assert.notDeepEqual(uuid, util.generateUUID(), "expecting no-collition: " + i);
+      }
+    });
+    
+  </script>
+</body>
+</html>
