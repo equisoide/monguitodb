@@ -161,6 +161,17 @@ order.update({status: "Delivered"}); // Updates the document.
 order.remove();                      // Removes the document.
 ```
 
+### Collection.count() → {number}
+
+Counts the number of documents in the collection.
+
+**Returns**: number
+
+```js
+var db    = new MonguitoDB(localStorage, "orders");
+var count = db.orders.count();
+```
+
 ## Creator
 
 **Juan Cuartas**
