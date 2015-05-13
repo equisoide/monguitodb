@@ -36,7 +36,7 @@ var db = new MonguitoDB(null, ["orders", "users"]);
 
 A collection is a set of documents. It is equivalent to a table in the relational world, with the difference that a collection does not enforce a schema.
 
-The following actions can be performed on a Collection: **insert, update, remove, get, find, findOne, count.**
+The following actions can be performed on a Collection: **insert, update, remove, find, findOne, get, count.**
 
 Collections are initialized by **MonguitoDB()** constructor and they can't be initialized by yourself!
 
@@ -96,6 +96,25 @@ NOTE: _id property can't be modified.
 
  // Updates several documents (those matching recipient = "Juan").
  db.orders.update({recipient: "Juan"}, {status: "Delivered"});
+```
+
+### Collection.remove(query)
+
+Removes one or several documents from the collection.
+
+NOTE: If no query is passed-in, all documents in the collection will be removed.
+
+```js
+ var db = new MonguitoDB(localStorage, "orders");
+
+// Removes a single document (that one matching _id = 1).
+db.orders.remove({_id: 1});
+
+// Removes several documents (those matching recipient = "Juan").
+db.orders.remove({recipient: "Juan"});
+
+// Removes all documents.
+db.orders.remove();
 ```
 
 ### Collection.find(query) → {Cursor}
