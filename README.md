@@ -43,7 +43,7 @@ Collections are initialized by **MonguitoDB()** constructor and they can't be in
 ```js
 // The following code shows how to reference collections initialized by
 // MonguitoDB() constructor.
-var db = new MonguitoDB(localStorage, ["orders", "users"]);
+var db = new MonguitoDB(localStoraCoge, ["orders", "users"]);
 
 var ordersCollection = db.orders;
 var usersCollection  = db.users;
