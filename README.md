@@ -79,9 +79,13 @@ var documentId = order._id;
 
 Retrieves all documents in the collection matching the specified query. If no query is passed-in, all documents within the collection will be returned.
 
-- **query** (*object | function*): Specifies selection criteria.
-
 This function returns a Cursor that can be manipulated as an array plus the following actions: **update, remove, get, find, findOne, sort, first, last, pretty, count.**
+
+| Parameter | Type             | Description                   |
+| --------- | ---------------- |------------------------------ |
+| query     | object, function |  Specifies selection criteria |
+
+**Returns**: Cursor
 
 ```js
 var db     = new MonguitoDB(localStorage, "orders");
