@@ -53,11 +53,15 @@ var usersCollection  = db.users;
 
 Inserts a new object into the collection and returns a reference to the inserted Document.
 
-- **obj** (*object*): Document to insert into the collection.
-
 NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:
  1. **Auto-numeric**: when _id is omitted in the passed-in obj.
  2. [UUID](http://en.wikipedia.org/wiki/Universally_unique_identifier): When _id is set to "uuid" in the passed-in obj.
+ 
+| Parameter | Type   | Description                            |
+| --------- | ------ |--------------------------------------- |
+| obj       | object | Document to insert into the collection |
+
+**Returns**: Document | null
 
 ```js
 var db = new MonguitoDB(localStorage, "orders");
