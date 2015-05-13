@@ -1,5 +1,6 @@
 # MonguitoDB
-Utility to perform CRUD operations over the localStorage, sessionStorage, or any object implementing the Storage Interface defined by the W3C.
+
+Utility to perform CRUD operations over the localStorage, sessionStorage, or any object implementing the [Storage Interface](http://www.w3.org/TR/webstorage/#the-storage-interface) defined by the W3C.
 
 This library was inspired by MongoDB, and some of its functions are syntactically similar to how they are in Mongo, with some differences and limitations.
 
@@ -29,7 +30,23 @@ var db = new MonguitoDB(sessionStorage, ["orders", "users"]);
 
 // An object to perform CRUD operations over collections stored in memory.
 var db = new MonguitoDB(null, ["orders", "users"]);
+```
 
+## Collections
+
+A collection is a set of documents. It is equivalent to a table in the relational world, with the difference that a collection does not enforce a schema.
+
+The following actions can be performed on a Collection: insert, update, remove, get, find, findOne, count.
+
+Collections are initialized by MonguitoDB() constructor and they can't be initialized by yourself!
+
+```js
+// The following code shows how to reference collections initialized by
+// MonguitoDB() constructor.
+var db = new MonguitoDB(localStorage, ["orders", "users"]);
+
+var ordersCollection = db.orders;
+var usersCollection  = db.users;
 ```
 
 ## Creator
