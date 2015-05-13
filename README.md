@@ -49,7 +49,7 @@ var ordersCollection = db.orders;
 var usersCollection  = db.users;
 ```
 
-### Collection.insert(obj)
+### Collection.insert(obj) → {Document}
 
 Inserts a new object into the collection and returns a reference to the inserted Document.
 
@@ -61,7 +61,7 @@ NOTE: _id property is the document's "primary key" wich is automatically assigne
 | --------- | ------ |--------------------------------------- |
 | obj       | object | Document to insert into the collection |
 
-**Returns**: Document | null
+**Returns**: Document
 
 ```js
 var db = new MonguitoDB(localStorage, "orders");
@@ -75,7 +75,7 @@ var order = db.orders.insert({_id: "uuid", recipient: "Juan", total: 50});
 var documentId = order._id;
 ```
 
-### Collection.find(query)
+### Collection.find(query) → {Cursor}
 
 Retrieves all documents in the collection matching the specified query. If no query is passed-in, all documents within the collection will be returned.
 
@@ -114,7 +114,7 @@ var lastOrder  = db.orders.find().sort("total").last();
 console.log(db.orders.find().pretty());
 ```
 
-### Collection.findOne(query)
+### Collection.findOne(query) → {Document | null}
 
 Returns a Document that satisfies the specified query. If multiple documents satisfy the query, it will be returned the first document found (according to insertion order). If there is no matching document within the collection, it will be returned null.
 
@@ -138,19 +138,19 @@ order.remove();                      // Removes the document.
 var order = db.orders.findOne(function (e) { return e.total > 0; });
 ```
 
-### Collection.get(documentId)
+### Collection.get(documentId) → {Document | null}
 
 Gets the Document that matches the specified _id. If there is no matching document within the collection, it will be returned null.
 
 The following actions can be performed on the returned document: **update, remove, pretty**.
 
-NOTE: **get()** is faster than **find()** and **findOne()**.
+NOTE: get() is faster than find() and findOne().
 
 | Parameter  | Type           | Description   |
 | ---------- | -------------- |-------------- |
 | documentId | number, string |  Document _id |
 
-**Returns**: Document
+**Returns**: Document | null
 
 ```js
 var db    = new MonguitoDB(localStorage, "orders");
