@@ -53,9 +53,11 @@ var usersCollection  = db.users;
 
 Inserts a new object into the collection and returns a reference to the inserted Document.
 
+- **obj** (*object*): Document to insert into the collection.
+
 NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:
-- **Auto-numeric**: when _id is omitted in the passed-in obj.
-- [UUID](http://en.wikipedia.org/wiki/Universally_unique_identifier): When _id is set to "uuid" in the passed-in obj.
+ 1. **Auto-numeric**: when _id is omitted in the passed-in obj.
+ 2. [UUID](http://en.wikipedia.org/wiki/Universally_unique_identifier): When _id is set to "uuid" in the passed-in obj.
 
 ```js
 var db = new MonguitoDB(localStorage, "orders");
@@ -69,9 +71,46 @@ var order = db.orders.insert({_id: "uuid", recipient: "Juan", total: 50});
 var documentId = order._id;
 ```
 
+### Collection.find(query)
+
+Retrieves all documents in the collection matching the specified query. If no query is passed-in, all documents within the collection will be returned.
+
+- **query** (*object | function*): Specifies selection criteria.
+
+This function returns a Cursor that can be manipulated as an array plus the following actions: **update, remove, get, find, findOne, sort, first, last, pretty, count.**
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var orders = db.orders.find();
+
+// Each element in the cursor is of type Document
+orders.forEach(function (order) {
+   console.log(order.pretty());
+});
+
+// Applying conditions to retrieve the data.
+orders = db.orders.find({status: "Delivered"});
+orders = db.orders.find({status: "Delivered", seller: "Armani"});
+orders = db.orders.find(function (e) { return e.total > 700; });
+
+// Sorting the data.
+orders = db.orders.find().sort("seller");
+orders = db.orders.find().sort("seller, total");
+orders = db.orders.find().sort("seller ASC, total DESC");
+
+// Executing many actions in cascade.
+var firstOrder = db.orders.find().sort("total").first();
+var lastOrder  = db.orders.find().sort("total").last();
+
+// Printing the whole collection.
+console.log(db.orders.find().pretty());
+```
+
 ### Collection.get(documentId)
 
 Gets the Document that matches the specified _id. If there is no matching document within the collection, it will be returned null.
+
+- **documentId** (*number | string*): Document _id.
 
 The following actions can be performed on the returned document: **update, remove, pretty**.
 
