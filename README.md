@@ -55,7 +55,7 @@ Inserts a new object into the collection and returns a reference to the inserted
 
 NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:
 - **Auto-numeric**: when _id is omitted in the passed-in obj.
-- **UUID**: When _id is set to "uuid" in the passed-in obj.
+- [UUID](http://en.wikipedia.org/wiki/Universally_unique_identifier): When _id is set to "uuid" in the passed-in obj.
 
 ```js
 var db = new MonguitoDB(localStorage, "orders");
