@@ -55,7 +55,7 @@ Inserts a new object into the collection and returns a reference to the inserted
 
 NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:
  1. Auto-numeric: when _id is omitted in the passed-in obj.
- 2. UUID: When _id is set to "uuid" in the passed-in obj.
+ 2. [UUID](http://en.wikipedia.org/wiki/Universally_unique_identifier): When _id is set to "uuid" in the passed-in obj.
  
 | Parameter | Type   | Description                            |
 | --------- | ------ |--------------------------------------- |
@@ -114,15 +114,43 @@ var lastOrder  = db.orders.find().sort("total").last();
 console.log(db.orders.find().pretty());
 ```
 
+### Collection.findOne(query)
+
+Returns a Document that satisfies the specified query. If multiple documents satisfy the query, it will be returned the first document found (according to insertion order). If there is no matching document within the collection, it will be returned null.
+
+The following actions can be performed on the returned document: **update, remove, pretty**.
+
+| Parameter | Type             | Description                   |
+| --------- | ---------------- |------------------------------ |
+| query     | object, function |  Specifies selection criteria |
+
+**Returns**: Document | null
+
+```js
+var db    = new MonguitoDB(localStorage, "orders");
+var order = db.orders.findOne({recipient: "Juan"});
+
+console.log(order.pretty());         // Prints the document.
+order.update({status: "Delivered"}); // Updates the document.
+order.remove();                      // Removes the document.
+
+// Using findOne() with a function criteria.
+var order = db.orders.findOne(function (e) { return e.total > 0; });
+```
+
 ### Collection.get(documentId)
 
 Gets the Document that matches the specified _id. If there is no matching document within the collection, it will be returned null.
 
-- **documentId** (*number | string*): Document _id.
-
 The following actions can be performed on the returned document: **update, remove, pretty**.
 
 NOTE: **get()** is faster than **find()** and **findOne()**.
+
+| Parameter  | Type           | Description   |
+| ---------- | -------------- |-------------- |
+| documentId | number, string |  Document _id |
+
+**Returns**: Document
 
 ```js
 var db    = new MonguitoDB(localStorage, "orders");
