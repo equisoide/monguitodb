@@ -598,13 +598,13 @@ cursor.<span class="pl-c1">remove</span>();</pre></div>
 <span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
 
 <span class="pl-c">// Sorts the documents by seller (Default sort direction is ascending).</span>
-orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller<span class="pl-pds">"</span></span>);
 
 <span class="pl-c">// Sorts the documents by seller and total.</span>
-orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller, total<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller, total<span class="pl-pds">"</span></span>);
 
 <span class="pl-c">// Sorts the documents by seller (ascending) and total (descending).</span>
-orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller ASC, total DESC<span class="pl-pds">"</span></span>);</pre></div>
+<span class="pl-k">var</span> orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller ASC, total DESC<span class="pl-pds">"</span></span>);</pre></div>
 
 <h3>
 <a id="cursorpretty--string" class="anchor" href="#cursorpretty--string" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.pretty() → {string}</h3>
