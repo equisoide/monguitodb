@@ -480,6 +480,15 @@ var cursor = db.orders.find({recipient: "Juan"});
 var count  = cursor.count();
 ```
 
+## TODO List
+
+- Full demo page
+- Pagination
+- Import data
+- Agregation framework
+- Full text search
+- Replication
+
 ## Creator
 
 **Juan Cuartas**
