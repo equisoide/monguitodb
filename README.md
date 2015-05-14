@@ -57,9 +57,9 @@ NOTE: _id property is the document's "primary key" wich is automatically assigne
  1. Auto-numeric: when _id is omitted in the passed-in obj.
  2. [UUID](http://en.wikipedia.org/wiki/Universally_unique_identifier): When _id is set to "uuid" in the passed-in obj.
  
-| Parameter | Type   | Description                            |
-| --------- | ------ |--------------------------------------- |
-| obj       | object | Document to insert into the collection |
+| Parameter | Type   | Description                             |
+| --------- | ------ | --------------------------------------- |
+| obj       | object | Document to insert into the collection  |
 
 **Returns**: [Document](#document)
 
@@ -81,10 +81,10 @@ Updates one or several documents in the collection and returns a [Cursor](#curso
 
 NOTE: _id property can't be modified.
  
-| Parameter | Type             | Description                                 |
-| --------- | ---------------- |-------------------------------------------- |
-| query     | object, function | Selection criteria for the update           |
-| obj       | object           | The modifications to apply (_id is omitted) |
+| Parameter | Type             | Description                                  |
+| --------- | ---------------- | -------------------------------------------- |
+| query     | object, function | Selection criteria for the update            |
+| obj       | object           | The modifications to apply (_id is omitted)  |
 
 **Returns**: [Cursor](#cursor)
 
@@ -123,9 +123,9 @@ Retrieves all documents in the collection matching the specified query. If no qu
 
 This function returns a [Cursor](#cursor) that can be manipulated as an array plus the following actions: **update, remove, find, findOne, get, first, last, sort, pretty, count.**
 
-| Parameter | Type             | Description                   |
-| --------- | ---------------- |------------------------------ |
-| query     | object, function |  Specifies selection criteria |
+| Parameter | Type             | Description                    |
+| --------- | ---------------- | ------------------------------ |
+| query     | object, function |  Specifies selection criteria  |
 
 **Returns**: [Cursor](#cursor)
 
@@ -162,9 +162,9 @@ Returns a [Document](#document) that satisfies the specified query. If multiple 
 
 The following actions can be performed on the returned document: **update, remove, pretty**.
 
-| Parameter | Type             | Description                   |
-| --------- | ---------------- |------------------------------ |
-| query     | object, function |  Specifies selection criteria |
+| Parameter | Type             | Description                  |
+| --------- | ---------------- | ---------------------------- |
+| query     | object, function | Specifies selection criteria |
 
 **Returns**: [Document](#document) | null
 
@@ -189,7 +189,7 @@ The following actions can be performed on the returned document: **update, remov
 NOTE: get() is faster than find() and findOne().
 
 | Parameter  | Type           | Description   |
-| ---------- | -------------- |-------------- |
+| ---------- | -------------- | ------------- |
 | documentId | number, string |  Document _id |
 
 **Returns**: [Document](#document) | null
@@ -248,7 +248,7 @@ Updates the document in the storage.
 NOTE: _id property can't be modified.
 
 | Parameter  | Type   | Description                                  |
-| ---------- | ------ |--------------------------------------------- |
+| ---------- | ------ | -------------------------------------------- |
 | obj        | object |  The modifications to apply (_id is omitted) |
 
 **Returns**: [Document](#document)
@@ -293,7 +293,192 @@ console.log(order.pretty());
 
 ## Cursor
 
-...
+A cursor is a set of documents. It can be manipulated as an array plus the following actions: update, remove, find, findOne, get, first, last, sort, pretty, count.
+
+Cursors are initialized by Collection.find(), they can't be initialized by yourself.
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+```
+
+### Cursor.update(obj) → {[Cursor](#cursor)}
+
+Updates all documents in the cursor (changes are applied both in the cursor and the storage).
+
+NOTE: _id property can't be modified.
+
+| Parameter  | Type   | Description                                  |
+| ---------- | ------ | -------------------------------------------- |
+| obj        | object |  The modifications to apply (_id is omitted) |
+
+**Returns**: [Cursor](#cursor)
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Updates all orders belonging to "Juan" with status "Delivered".
+cursor.update({status: "Delivered"});
+```
+
+### Cursor.remove()
+
+Removes all documents in the cursor (changes are applied both in the cursor and the storage).
+
+NOTE: Once you call remove() on a cursor the cursor will be empty.
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Removes all orders belonging to "Juan".
+cursor.remove();
+```
+
+### Cursor.find(query) → {[Cursor](#cursor)}
+
+Retrieves all documents within the cursor that match the specified query.
+
+NOTE: This function creates and returns a new cursor (the original one won't be modified).
+
+| Parameter  | Type             | Description                  |
+| ---------- | ---------------- | ---------------------------- |
+| query      | object, function | Specifies selection criteria |
+
+**Returns**: [Cursor](#cursor)
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Gets all orders belonging to "Juan" with status "Pending".
+var pending = cursor.find({status: "Pending"});
+
+// Gets all orders belonging to "Juan" with total >= 1000.
+var expensive = cursor.find(function (e) { return e.total >= 1000; });
+```
+
+### Cursor.findOne(query) → {[Document](#document) | null}
+
+Returns a [Document](#document) within the cursor matching the specified query. If multiple documents satisfy the query, it will be returned the first document found. If there is no matching document within the cursor, it will be returned null.
+
+| Parameter  | Type             | Description                  |
+| ---------- | ---------------- | ---------------------------- |
+| query      | object, function | Specifies selection criteria |
+
+**Returns**: [Document](#document) | null
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Gets the order belonging to "Juan" with number "107-1".
+var order = cursor.findOne({number: "107-1"});
+
+// Another way to do the same above.
+var order = cursor.findOne(function (e) { return e.number === "107-1"});
+```
+
+### Cursor.get(documentId) → {[Document](#document) | null}
+
+Gets the [Document](#document) within the cursor matching the specified _id. If there is no matching document within the cursor, it will be returned null.
+
+| Parameter  | Type           | Description  |
+| ---------- | -------------- | ------------ |
+| documentId | number, string | Document _id |
+
+**Returns**: [Document](#document) | null
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Gets the order belonging to "Juan" with _id = 1.
+var order = cursor.get(1);
+```
+
+### Cursor.first() → {[Document](#document) | null}
+
+Returns the first [Document](#document) within the cursor. If the cursor is empty, it will be returned null.
+
+**Returns**: [Document](#document) | null
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Gets the first order belonging to "Juan".
+var order = cursor.first();
+```
+
+### Cursor.last() → {[Document](#document) | null}
+
+Returns the last [Document](#document) within the cursor. If the cursor is empty, it will be returned null.
+
+**Returns**: [Document](#document) | null
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Gets the last order belonging to "Juan".
+var order = cursor.last();
+```
+
+### Cursor.sort(sortExpression) → {[Cursor](#cursor)}
+
+Sorts the cursor and returns a reference to the new sorted cursor.
+
+NOTE: This function creates and returns a new cursor (the original one won't be modified).
+
+| Parameter      | Type   | Description                                                        |
+| -------------- | ------ | ------------------------------------------------------------------ |
+| sortExpression | string | Sort expression (You can use ASC or DESC to specify sort direction |
+
+**Returns**: [Cursor](#cursor)
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Sorts the documents by seller (Default sort direction is ascending).
+orders = cursor.sort("seller");
+
+// Sorts the documents by seller and total.
+orders = cursor.sort("seller, total");
+
+// Sorts the documents by seller (ascending) and total (descending).
+orders = cursor.sort("seller ASC, total DESC");
+```
+
+### Cursor.pretty() → {string}
+
+Gets a "pretty" JSON representation of the cursor.
+
+**Returns**: string
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Prints all orders belonging to "Juan".
+console.log(cursor.pretty());
+```
+
+### Cursor.count() → {number}
+
+Counts the number of documents within the cursor.
+
+**Returns**: number
+
+```js
+var db     = new MonguitoDB(localStorage, "orders");
+var cursor = db.orders.find({recipient: "Juan"});
+
+// Counts the number of orders belonging to "Juan"
+var count  = cursor.count();
+```
 
 ## Creator
 
