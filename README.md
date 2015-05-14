@@ -443,13 +443,13 @@ var db     = new MonguitoDB(localStorage, "orders");
 var cursor = db.orders.find({recipient: "Juan"});
 
 // Sorts the documents by seller (Default sort direction is ascending).
-orders = cursor.sort("seller");
+var orders = cursor.sort("seller");
 
 // Sorts the documents by seller and total.
-orders = cursor.sort("seller, total");
+var orders = cursor.sort("seller, total");
 
 // Sorts the documents by seller (ascending) and total (descending).
-orders = cursor.sort("seller ASC, total DESC");
+var orders = cursor.sort("seller ASC, total DESC");
 ```
 
 ### Cursor.pretty() → {string}
