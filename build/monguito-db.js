@@ -1,4 +1,4 @@
-/*! MonguitoDB v0.0.1 | Tue May 12 2015 23:17:10 | (c) Juan Cuartas | MIT license */
+/*! MonguitoDB v0.0.1 | Thu May 14 2015 00:54:07 | (c) Juan Cuartas | MIT license */
 (function (exports) {
 
 /**

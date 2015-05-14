@@ -2,7 +2,7 @@
   "name": "MonguitoDB",
   "description": "Utility to perform CRUD operations over the localStorage and sessionStorage",
   "version": "0.0.1",
-  "homepage": "http://juancuartas.com/monguitodb/index.html",
+  "homepage": "http://equisoide.github.io/monguitodb/",
   "author": {
     "name": "Juan Cuartas",
     "email": "equisoide@gmail.com",
