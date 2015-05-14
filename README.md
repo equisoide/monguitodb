@@ -49,9 +49,9 @@ var ordersCollection = db.orders;
 var usersCollection  = db.users;
 ```
 
-### Collection.insert(obj) → {[Document](#document)}
+### Collection.insert(obj) → {[Document](https://github.com/equisoide/monguitodb#document)}
 
-Inserts a new object into the collection and returns a reference to the inserted [Document](#document).
+Inserts a new object into the collection and returns a reference to the inserted [Document](https://github.com/equisoide/monguitodb#document).
 
 NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:
  1. Auto-numeric: when _id is omitted in the passed-in obj.
@@ -61,7 +61,7 @@ NOTE: _id property is the document's "primary key" wich is automatically assigne
 | --------- | ------ |--------------------------------------- |
 | obj       | object | Document to insert into the collection |
 
-**Returns**: [Document](#document)
+**Returns**: [Document](https://github.com/equisoide/monguitodb#document)
 
 ```js
 var db = new MonguitoDB(localStorage, "orders");
@@ -75,9 +75,9 @@ var order = db.orders.insert({_id: "uuid", recipient: "Juan", total: 50});
 var documentId = order._id;
 ```
 
-### Collection.update(query, obj) → {[Cursor](#cursor)}
+### Collection.update(query, obj) → {[Cursor](https://github.com/equisoide/monguitodb#cursor)}
 
-Updates one or several documents in the collection and returns a [Cursor](#cursor) containing the updated documents.
+Updates one or several documents in the collection and returns a [Cursor](https://github.com/equisoide/monguitodb#cursor) containing the updated documents.
 
 NOTE: _id property can't be modified.
  
@@ -86,7 +86,7 @@ NOTE: _id property can't be modified.
 | query     | object, function | Selection criteria for the update           |
 | obj       | object           | The modifications to apply (_id is omitted) |
 
-**Returns**: [Cursor](#cursor)
+**Returns**: [Cursor](https://github.com/equisoide/monguitodb#cursor)
 
 ```js
  var db = new MonguitoDB(localStorage, "orders");
@@ -117,17 +117,17 @@ db.orders.remove({recipient: "Juan"});
 db.orders.remove();
 ```
 
-### Collection.find(query) → {[Cursor](#cursor)}
+### Collection.find(query) → {[Cursor](https://github.com/equisoide/monguitodb#cursor)}
 
 Retrieves all documents in the collection matching the specified query. If no query is passed-in, all documents within the collection will be returned.
 
-This function returns a [Cursor](#cursor) that can be manipulated as an array plus the following actions: **update, remove, find, findOne, get, first, last, sort, pretty, count.**
+This function returns a [Cursor](https://github.com/equisoide/monguitodb#cursor) that can be manipulated as an array plus the following actions: **update, remove, find, findOne, get, first, last, sort, pretty, count.**
 
 | Parameter | Type             | Description                   |
 | --------- | ---------------- |------------------------------ |
 | query     | object, function |  Specifies selection criteria |
 
-**Returns**: [Cursor](#cursor)
+**Returns**: [Cursor](https://github.com/equisoide/monguitodb#cursor)
 
 ```js
 var db     = new MonguitoDB(localStorage, "orders");
@@ -156,9 +156,9 @@ var lastOrder  = db.orders.find().sort("total").last();
 console.log(db.orders.find().pretty());
 ```
 
-### Collection.findOne(query) → {[Document](#document) | null}
+### Collection.findOne(query) → {[Document](https://github.com/equisoide/monguitodb#document) | null}
 
-Returns a [Document](#document) that satisfies the specified query. If multiple documents satisfy the query, it will be returned the first document found (according to insertion order). If there is no matching document within the collection, it will be returned null.
+Returns a [Document](https://github.com/equisoide/monguitodb#document) that satisfies the specified query. If multiple documents satisfy the query, it will be returned the first document found (according to insertion order). If there is no matching document within the collection, it will be returned null.
 
 The following actions can be performed on the returned document: **update, remove, pretty**.
 
@@ -166,7 +166,7 @@ The following actions can be performed on the returned document: **update, remov
 | --------- | ---------------- |------------------------------ |
 | query     | object, function |  Specifies selection criteria |
 
-**Returns**: [Document](#document) | null
+**Returns**: [Document](https://github.com/equisoide/monguitodb#document) | null
 
 ```js
 var db    = new MonguitoDB(localStorage, "orders");
@@ -180,7 +180,7 @@ order.remove();                      // Removes the document.
 var order = db.orders.findOne(function (e) { return e.total > 0; });
 ```
 
-### Collection.get(documentId) → {[Document](#document) | null}
+### Collection.get(documentId) → {[Document](https://github.com/equisoide/monguitodb#document) | null}
 
 Gets the Document that matches the specified _id. If there is no matching document within the collection, it will be returned null.
 
@@ -192,7 +192,7 @@ NOTE: get() is faster than find() and findOne().
 | ---------- | -------------- |-------------- |
 | documentId | number, string |  Document _id |
 
-**Returns**: [Document](#document) | null
+**Returns**: [Document](https://github.com/equisoide/monguitodb#document) | null
 
 ```js
 var db    = new MonguitoDB(localStorage, "orders");
