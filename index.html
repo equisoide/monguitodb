@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>MonguitoDB by equisoide</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='http://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">MonguitoDB</h1>
+      <h2 class="project-tagline">Utility to perform CRUD operations over the localStorage and sessionStorage</h2>
+      <a href="https://github.com/equisoide/monguitodb" class="btn">View on GitHub</a>
+      <a href="https://github.com/equisoide/monguitodb/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/equisoide/monguitodb/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="monguitodb" class="anchor" href="#monguitodb" aria-hidden="true"><span class="octicon octicon-link"></span></a>MonguitoDB</h1>
+
+<p>Utility to perform CRUD operations over the localStorage, sessionStorage, or any object implementing the <a href="http://www.w3.org/TR/webstorage/#the-storage-interface">Storage Interface</a> defined by the W3C.</p>
+
+<p>This library was inspired by MongoDB, and some of its functions are syntactically similar to how they are in Mongo, with some differences and limitations.</p>
+
+<p>NOTE: This utility works synchronously.</p>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>Download the <a href="https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.min.js">minified library</a> (which is under 10KB) and include it in your html. Alternatively you can download the <a href="https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.js">development version</a>.</p>
+
+<div class="highlight highlight-html"><pre>&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>monguito-db.min.js<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
+
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span class="octicon octicon-link"></span></a>Getting started</h2>
+
+<p>Initialize a new database instance with <strong>new MonguitoDB(storage, collections)</strong> where:</p>
+
+<ul>
+<li>
+<strong>storage</strong>: Is an object providing the storage mechanism. You can send localStorage or sessionStorage if the browser supports HTML5. Send null to use the default mechanism which stores collections in memory. Alternatively, you can send your own object implementing the <a href="http://www.w3.org/TR/webstorage/#the-storage-interface">Storage Interface</a> defined by the W3C.</li>
+<li>
+<strong>collections</strong>: Is an array containing the names of the collections to be manipulated (analogous to tables in a relational database). You can send a single name, or an array of names if you want to manipulate several collections.</li>
+</ul>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">// An object to perform CRUD operations over the HTML5 localStorage.</span>
+<span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// An object to perform CRUD operations over the HTML5 sessionStorage.</span>
+<span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(sessionStorage, [<span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>users<span class="pl-pds">"</span></span>]);
+
+<span class="pl-c">// An object to perform CRUD operations over collections stored in memory.</span>
+<span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(<span class="pl-c1">null</span>, [<span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>users<span class="pl-pds">"</span></span>]);</pre></div>
+
+<h2>
+<a id="collection" class="anchor" href="#collection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection</h2>
+
+<p>A collection is a set of documents. It is equivalent to a table in the relational world, with the difference that a collection does not enforce a schema.</p>
+
+<p>The following actions can be performed on a Collection: <strong>insert, update, remove, find, findOne, get, count.</strong></p>
+
+<p>Collections are initialized by <strong>MonguitoDB()</strong> constructor, they can't be initialized by yourself.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-c">// The following code shows how to reference collections initialized by</span>
+<span class="pl-c">// MonguitoDB() constructor.</span>
+<span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStoraCoge, [<span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>users<span class="pl-pds">"</span></span>]);
+
+<span class="pl-k">var</span> ordersCollection <span class="pl-k">=</span> db.orders;
+<span class="pl-k">var</span> usersCollection  <span class="pl-k">=</span> db.users;</pre></div>
+
+<h3>
+<a id="collectioninsertobj--document" class="anchor" href="#collectioninsertobj--document" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection.insert(obj) → {<a href="#document">Document</a>}</h3>
+
+<p>Inserts a new object into the collection and returns a reference to the inserted <a href="#document">Document</a>.</p>
+
+<p>NOTE: _id property is the document's "primary key" wich is automatically assigned. It can be of two types:</p>
+
+<ol>
+<li>Auto-numeric: when _id is omitted in the passed-in obj.</li>
+<li>
+<a href="http://en.wikipedia.org/wiki/Universally_unique_identifier">UUID</a>: When _id is set to "uuid" in the passed-in obj.</li>
+</ol>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>obj</td>
+<td>object</td>
+<td>Document to insert into the collection</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// case 1) _id will be automatically assigned as an auto-numeric value.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.insert({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>, total<span class="pl-k">:</span> <span class="pl-c1">50</span>});
+<span class="pl-k">var</span> documentId <span class="pl-k">=</span> order._id;
+
+<span class="pl-c">// case 2) _id will be automatically assigned as an UUID.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.insert({_id<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>uuid<span class="pl-pds">"</span></span>, recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>, total<span class="pl-k">:</span> <span class="pl-c1">50</span>});
+<span class="pl-k">var</span> documentId <span class="pl-k">=</span> order._id;</pre></div>
+
+<h3>
+<a id="collectionupdatequery-obj--cursor" class="anchor" href="#collectionupdatequery-obj--cursor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection.update(query, obj) → {<a href="#cursor">Cursor</a>}</h3>
+
+<p>Updates one or several documents in the collection and returns a <a href="#cursor">Cursor</a> containing the updated documents.</p>
+
+<p>NOTE: _id property can't be modified.</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>query</td>
+<td>object, function</td>
+<td>Selection criteria for the update</td>
+</tr>
+<tr>
+<td>obj</td>
+<td>object</td>
+<td>The modifications to apply (_id is omitted)</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#cursor">Cursor</a></p>
+
+<div class="highlight highlight-js"><pre> <span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+
+ <span class="pl-c">// Updates a single document (that one matching _id = 1).</span>
+ db.orders.update({_id<span class="pl-k">:</span> <span class="pl-c1">1</span>}, {status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>});
+
+ <span class="pl-c">// Updates several documents (those matching recipient = "Juan").</span>
+ db.orders.update({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>}, {status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>});</pre></div>
+
+<h3>
+<a id="collectionremovequery" class="anchor" href="#collectionremovequery" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection.remove(query)</h3>
+
+<p>Removes one or several documents from the collection.</p>
+
+<p>NOTE: If no query is passed-in, all documents in the collection will be removed.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Removes a single document (that one matching _id = 1).</span>
+db.orders.<span class="pl-c1">remove</span>({_id<span class="pl-k">:</span> <span class="pl-c1">1</span>});
+
+<span class="pl-c">// Removes several documents (those matching recipient = "Juan").</span>
+db.orders.<span class="pl-c1">remove</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Removes all documents in the collection.</span>
+db.orders.<span class="pl-c1">remove</span>();</pre></div>
+
+<h3>
+<a id="collectionfindquery--cursor" class="anchor" href="#collectionfindquery--cursor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection.find(query) → {<a href="#cursor">Cursor</a>}</h3>
+
+<p>Retrieves all documents in the collection matching the specified query. If no query is passed-in, all documents within the collection will be returned.</p>
+
+<p>This function returns a <a href="#cursor">Cursor</a> that can be manipulated as an array plus the following actions: <strong>update, remove, find, findOne, get, first, last, sort, pretty, count.</strong></p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>query</td>
+<td>object, function</td>
+<td>Specifies selection criteria</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#cursor">Cursor</a></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> orders <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>();
+
+<span class="pl-c">// Each element in the cursor is of type Document</span>
+orders.forEach(<span class="pl-k">function</span> (<span class="pl-smi">order</span>) {
+   <span class="pl-en">console</span><span class="pl-c1">.log</span>(order.pretty());
+});
+
+<span class="pl-c">// Applying conditions to retrieve the data.</span>
+orders <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>});
+orders <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>, seller<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Armani<span class="pl-pds">"</span></span>});
+orders <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>(<span class="pl-k">function</span> (<span class="pl-smi">e</span>) { <span class="pl-k">return</span> e.total <span class="pl-k">&gt;</span> <span class="pl-c1">700</span>; });
+
+<span class="pl-c">// Sorting the data.</span>
+orders <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>().<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller<span class="pl-pds">"</span></span>);
+orders <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>().<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller, total<span class="pl-pds">"</span></span>);
+orders <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>().<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller ASC, total DESC<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Executing many actions in cascade.</span>
+<span class="pl-k">var</span> firstOrder <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>().<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>total<span class="pl-pds">"</span></span>).first();
+<span class="pl-k">var</span> lastOrder  <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>().<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>total<span class="pl-pds">"</span></span>).last();
+
+<span class="pl-c">// Printing the whole collection.</span>
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(db.orders.<span class="pl-c1">find</span>().pretty());</pre></div>
+
+<h3>
+<a id="collectionfindonequery--document--null" class="anchor" href="#collectionfindonequery--document--null" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection.findOne(query) → {<a href="#document">Document</a> | null}</h3>
+
+<p>Returns a <a href="#document">Document</a> that satisfies the specified query. If multiple documents satisfy the query, it will be returned the first document found (according to insertion order). If there is no matching document within the collection, it will be returned null.</p>
+
+<p>The following actions can be performed on the returned document: <strong>update, remove, pretty</strong>.</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>query</td>
+<td>object, function</td>
+<td>Specifies selection criteria</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a> | null</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db    <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.findOne({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(order.pretty());         <span class="pl-c">// Prints the document.</span>
+order.update({status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>}); <span class="pl-c">// Updates the document.</span>
+order.<span class="pl-c1">remove</span>();                      <span class="pl-c">// Removes the document.</span>
+
+<span class="pl-c">// Using findOne() with a function criteria.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.findOne(<span class="pl-k">function</span> (<span class="pl-smi">e</span>) { <span class="pl-k">return</span> e.total <span class="pl-k">&gt;</span> <span class="pl-c1">0</span>; });</pre></div>
+
+<h3>
+<a id="collectiongetdocumentid--document--null" class="anchor" href="#collectiongetdocumentid--document--null" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection.get(documentId) → {<a href="#document">Document</a> | null}</h3>
+
+<p>Gets the Document that matches the specified _id. If there is no matching document within the collection, it will be returned null.</p>
+
+<p>The following actions can be performed on the returned document: <strong>update, remove, pretty</strong>.</p>
+
+<p>NOTE: get() is faster than find() and findOne().</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>documentId</td>
+<td>number, string</td>
+<td>Document _id</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a> | null</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db    <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.get(<span class="pl-c1">1</span>);
+
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(order.pretty());         <span class="pl-c">// Prints the document.</span>
+order.update({status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>}); <span class="pl-c">// Updates the document.</span>
+order.<span class="pl-c1">remove</span>();                      <span class="pl-c">// Removes the document.</span></pre></div>
+
+<h3>
+<a id="collectioncount--number" class="anchor" href="#collectioncount--number" aria-hidden="true"><span class="octicon octicon-link"></span></a>Collection.count() → {number}</h3>
+
+<p>Counts the number of documents in the collection.</p>
+
+<p><strong>Returns</strong>: number</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db    <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> count <span class="pl-k">=</span> db.orders.count();</pre></div>
+
+<h2>
+<a id="document" class="anchor" href="#document" aria-hidden="true"><span class="octicon octicon-link"></span></a>Document</h2>
+
+<p>A document belongs to a Collection. It is a JSON structure composed by key-value pairs. It can be thought as a "record" belonging to a table in the relational world.</p>
+
+<p>The following actions can be performed on a document: <strong>update, remove, pretty</strong>.</p>
+
+<p>Documents are retrieved through methods in the Collection class, they can't be initialized by yourself.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// You get a reference to a Document when you insert one.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.insert({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>, total<span class="pl-k">:</span> <span class="pl-c1">50</span>});
+
+<span class="pl-c">// You can get a Document with get() if you know its _id.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.get(<span class="pl-c1">1</span>);
+
+<span class="pl-c">// Individual elements retrieved from find() are of type Document.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>})[<span class="pl-c1">0</span>];
+
+<span class="pl-c">// By using findOne you can get the first Document retrieved from a query.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.findOne({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// You can also get a reference to a Document by using first() or last().</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>().first();</pre></div>
+
+<h3>
+<a id="documentupdateobj--document" class="anchor" href="#documentupdateobj--document" aria-hidden="true"><span class="octicon octicon-link"></span></a>Document.update(obj) → {<a href="#document">Document</a>}</h3>
+
+<p>Updates the document in the storage.</p>
+
+<p>NOTE: _id property can't be modified.</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>obj</td>
+<td>object</td>
+<td>The modifications to apply (_id is omitted)</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db    <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.get(<span class="pl-c1">1</span>);
+
+<span class="pl-c">// Update with arguments.</span>
+order.update({status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Update without arguments.</span>
+order.<span class="pl-c1">status</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>;
+order.update();</pre></div>
+
+<h3>
+<a id="documentremove" class="anchor" href="#documentremove" aria-hidden="true"><span class="octicon octicon-link"></span></a>Document.remove()</h3>
+
+<p>Removes the document from the storage.</p>
+
+<p>NOTE: Once you call remove() on a document, you can't perform remove() or update() on the document anymore, because an exception will be thrown.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db    <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.get(<span class="pl-c1">1</span>);
+
+order.<span class="pl-c1">remove</span>();</pre></div>
+
+<h3>
+<a id="documentpretty--string" class="anchor" href="#documentpretty--string" aria-hidden="true"><span class="octicon octicon-link"></span></a>Document.pretty() → {string}</h3>
+
+<p>Gets a "pretty" JSON representation of the document.</p>
+
+<p><strong>Returns</strong>: string</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db    <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> order <span class="pl-k">=</span> db.orders.get(<span class="pl-c1">1</span>);
+
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(order.pretty());</pre></div>
+
+<h2>
+<a id="cursor" class="anchor" href="#cursor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor</h2>
+
+<p>A cursor is a set of documents. It can be manipulated as an array plus the following actions: <strong>update, remove, find, findOne, get, first, last, sort, pretty, count</strong>.</p>
+
+<p>Cursors are initialized by Collection.find(), they can't be initialized by yourself.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});</pre></div>
+
+<h3>
+<a id="cursorupdateobj--cursor" class="anchor" href="#cursorupdateobj--cursor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.update(obj) → {<a href="#cursor">Cursor</a>}</h3>
+
+<p>Updates all documents in the cursor (changes are applied both in the cursor and the storage).</p>
+
+<p>NOTE: _id property can't be modified.</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>obj</td>
+<td>object</td>
+<td>The modifications to apply (_id is omitted)</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#cursor">Cursor</a></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Updates all orders belonging to "Juan" with status "Delivered".</span>
+cursor.update({status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Delivered<span class="pl-pds">"</span></span>});</pre></div>
+
+<h3>
+<a id="cursorremove" class="anchor" href="#cursorremove" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.remove()</h3>
+
+<p>Removes all documents in the cursor (changes are applied both in the cursor and the storage).</p>
+
+<p>NOTE: Once you call remove() on a cursor the cursor will be empty.</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Removes all orders belonging to "Juan".</span>
+cursor.<span class="pl-c1">remove</span>();</pre></div>
+
+<h3>
+<a id="cursorfindquery--cursor" class="anchor" href="#cursorfindquery--cursor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.find(query) → {<a href="#cursor">Cursor</a>}</h3>
+
+<p>Retrieves all documents within the cursor that match the specified query.</p>
+
+<p>NOTE: This function creates and returns a new cursor (the original one won't be modified).</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>query</td>
+<td>object, function</td>
+<td>Specifies selection criteria</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#cursor">Cursor</a></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Gets all orders belonging to "Juan" with status "Pending".</span>
+<span class="pl-k">var</span> pending <span class="pl-k">=</span> cursor.<span class="pl-c1">find</span>({status<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Pending<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Gets all orders belonging to "Juan" with total &gt;= 1000.</span>
+<span class="pl-k">var</span> expensive <span class="pl-k">=</span> cursor.<span class="pl-c1">find</span>(<span class="pl-k">function</span> (<span class="pl-smi">e</span>) { <span class="pl-k">return</span> e.total <span class="pl-k">&gt;=</span> <span class="pl-c1">1000</span>; });</pre></div>
+
+<h3>
+<a id="cursorfindonequery--document--null" class="anchor" href="#cursorfindonequery--document--null" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.findOne(query) → {<a href="#document">Document</a> | null}</h3>
+
+<p>Returns a <a href="#document">Document</a> within the cursor matching the specified query. If multiple documents satisfy the query, it will be returned the first document found. If there is no matching document within the cursor, it will be returned null.</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>query</td>
+<td>object, function</td>
+<td>Specifies selection criteria</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a> | null</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Gets the order belonging to "Juan" with number "107-1".</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> cursor.findOne({number<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>107-1<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Another way to do the same above.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> cursor.findOne(<span class="pl-k">function</span> (<span class="pl-smi">e</span>) { <span class="pl-k">return</span> e.number <span class="pl-k">===</span> <span class="pl-s"><span class="pl-pds">"</span>107-1<span class="pl-pds">"</span></span>});</pre></div>
+
+<h3>
+<a id="cursorgetdocumentid--document--null" class="anchor" href="#cursorgetdocumentid--document--null" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.get(documentId) → {<a href="#document">Document</a> | null}</h3>
+
+<p>Gets the <a href="#document">Document</a> within the cursor matching the specified _id. If there is no matching document within the cursor, it will be returned null.</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>documentId</td>
+<td>number, string</td>
+<td>Document _id</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a> | null</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Gets the order belonging to "Juan" with _id = 1.</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> cursor.get(<span class="pl-c1">1</span>);</pre></div>
+
+<h3>
+<a id="cursorfirst--document--null" class="anchor" href="#cursorfirst--document--null" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.first() → {<a href="#document">Document</a> | null}</h3>
+
+<p>Returns the first <a href="#document">Document</a> within the cursor. If the cursor is empty, it will be returned null.</p>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a> | null</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Gets the first order belonging to "Juan".</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> cursor.first();</pre></div>
+
+<h3>
+<a id="cursorlast--document--null" class="anchor" href="#cursorlast--document--null" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.last() → {<a href="#document">Document</a> | null}</h3>
+
+<p>Returns the last <a href="#document">Document</a> within the cursor. If the cursor is empty, it will be returned null.</p>
+
+<p><strong>Returns</strong>: <a href="#document">Document</a> | null</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Gets the last order belonging to "Juan".</span>
+<span class="pl-k">var</span> order <span class="pl-k">=</span> cursor.last();</pre></div>
+
+<h3>
+<a id="cursorsortsortexpression--cursor" class="anchor" href="#cursorsortsortexpression--cursor" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.sort(sortExpression) → {<a href="#cursor">Cursor</a>}</h3>
+
+<p>Sorts the cursor and returns a reference to the new sorted cursor.</p>
+
+<p>NOTE: This function creates and returns a new cursor (the original one won't be modified).</p>
+
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sortExpression</td>
+<td>string</td>
+<td>Sort expression (You can use ASC or DESC to specify sort direction</td>
+</tr>
+</tbody>
+</table>
+
+<p><strong>Returns</strong>: <a href="#cursor">Cursor</a></p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Sorts the documents by seller (Default sort direction is ascending).</span>
+orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Sorts the documents by seller and total.</span>
+orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller, total<span class="pl-pds">"</span></span>);
+
+<span class="pl-c">// Sorts the documents by seller (ascending) and total (descending).</span>
+orders <span class="pl-k">=</span> cursor.<span class="pl-c1">sort</span>(<span class="pl-s"><span class="pl-pds">"</span>seller ASC, total DESC<span class="pl-pds">"</span></span>);</pre></div>
+
+<h3>
+<a id="cursorpretty--string" class="anchor" href="#cursorpretty--string" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.pretty() → {string}</h3>
+
+<p>Gets a "pretty" JSON representation of the cursor.</p>
+
+<p><strong>Returns</strong>: string</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Prints all orders belonging to "Juan".</span>
+<span class="pl-en">console</span><span class="pl-c1">.log</span>(cursor.pretty());</pre></div>
+
+<h3>
+<a id="cursorcount--number" class="anchor" href="#cursorcount--number" aria-hidden="true"><span class="octicon octicon-link"></span></a>Cursor.count() → {number}</h3>
+
+<p>Counts the number of documents within the cursor.</p>
+
+<p><strong>Returns</strong>: number</p>
+
+<div class="highlight highlight-js"><pre><span class="pl-k">var</span> db     <span class="pl-k">=</span> <span class="pl-k">new</span> <span class="pl-en">MonguitoDB</span>(localStorage, <span class="pl-s"><span class="pl-pds">"</span>orders<span class="pl-pds">"</span></span>);
+<span class="pl-k">var</span> cursor <span class="pl-k">=</span> db.orders.<span class="pl-c1">find</span>({recipient<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>Juan<span class="pl-pds">"</span></span>});
+
+<span class="pl-c">// Counts the number of orders belonging to "Juan"</span>
+<span class="pl-k">var</span> count  <span class="pl-k">=</span> cursor.count();</pre></div>
+
+<h2>
+<a id="todo-list" class="anchor" href="#todo-list" aria-hidden="true"><span class="octicon octicon-link"></span></a>TODO List</h2>
+
+<ul>
+<li>Full demo page</li>
+<li>Pagination</li>
+<li>Import data</li>
+<li>Agregation framework</li>
+<li>Full text search</li>
+<li>Replication</li>
+</ul>
+
+<h2>
+<a id="creator" class="anchor" href="#creator" aria-hidden="true"><span class="octicon octicon-link"></span></a>Creator</h2>
+
+<p><strong>Juan Cuartas</strong></p>
+
+<ul>
+<li><a href="http://juancuartas.com">http://juancuartas.com</a></li>
+<li><a href="https://twitter.com/juancuartas">https://twitter.com/juancuartas</a></li>
+</ul>
+
+<h2>
+<a id="copyright-and-license" class="anchor" href="#copyright-and-license" aria-hidden="true"><span class="octicon octicon-link"></span></a>Copyright and license</h2>
+
+<p>Code and documentation released under <a href="https://github.com/equisoide/monguitodb/blob/master/LICENSE">the MIT license</a></p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/equisoide/monguitodb">MonguitoDB</a> is maintained by <a href="https://github.com/equisoide">equisoide</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
+
