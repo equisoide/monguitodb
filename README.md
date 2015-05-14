@@ -220,7 +220,7 @@ A document belongs to a Collection. It is a JSON structure composed by key-value
 
 The following actions can be performed on a document: **update, remove, pretty**.
 
-Documents are retrieved through methods in the Collection class, and they can't be initialized by yourself!
+Documents are retrieved through methods in the Collection class, they can't be initialized by yourself.
 
 ```js
 var db = new MonguitoDB(localStorage, "orders");
@@ -239,6 +239,56 @@ var order = db.orders.findOne({recipient: "Juan"});
 
 // You can also get a reference to a Document by using first() or last().
 var order = db.orders.find().first();
+```
+
+### Document.update(obj) → {[Document](#document)}
+
+Updates the document in the storage.
+
+NOTE: _id property can't be modified.
+
+| Parameter  | Type   | Description                                  |
+| ---------- | ------ |--------------------------------------------- |
+| obj        | object |  The modifications to apply (_id is omitted) |
+
+**Returns**: [Document](#document)
+
+```js
+var db    = new MonguitoDB(localStorage, "orders");
+var order = db.orders.get(1);
+
+// Update with arguments.
+order.update({status: "Delivered"});
+
+// Update without arguments.
+order.status = "Delivered";
+order.update();
+```
+
+### Document.remove()
+
+Removes the document from the storage.
+
+NOTE: Once you call remove() on a document, you can't perform remove() or update() on the document anymore, because an exception will be thrown.
+
+```js
+var db    = new MonguitoDB(localStorage, "orders");
+var order = db.orders.get(1);
+
+order.remove();
+```
+
+### Document.pretty() → {string}
+
+Gets a "pretty" JSON representation of the document.
+
+**Returns**: string
+
+```js
+var db    = new MonguitoDB(localStorage, "orders");
+var order = db.orders.get(1);
+
+console.log(order.pretty());
 ```
 
 ## Cursor
