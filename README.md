@@ -293,7 +293,7 @@ console.log(order.pretty());
 
 ## Cursor
 
-A cursor is a set of documents. It can be manipulated as an array plus the following actions: update, remove, find, findOne, get, first, last, sort, pretty, count.
+A cursor is a set of documents. It can be manipulated as an array plus the following actions: **update, remove, find, findOne, get, first, last, sort, pretty, count**.
 
 Cursors are initialized by Collection.find(), they can't be initialized by yourself.
 
