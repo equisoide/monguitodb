@@ -10,13 +10,14 @@ NOTE: This utility works synchronously.
 
 Download the [minified library](https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.min.js) (which is under 10KB) and include it in your html. Alternatively you can download the [development version](https://raw.githubusercontent.com/equisoide/monguitodb/master/build/monguito-db.js).
 
-## npm
-
-npm install monguitodb
 
 ```html
 <script src="monguito-db.min.js"></script>
 ```
+
+## npm
+
+npm install monguitodb
 
 ## Getting started
 
