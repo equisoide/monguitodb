@@ -17,7 +17,9 @@ Download the [minified library](https://raw.githubusercontent.com/equisoide/mong
 
 ## npm
 
+```sh
 npm install monguitodb
+```
 
 ## Getting started
 
