@@ -500,7 +500,6 @@ var count  = cursor.count();
 
 **Juan Cuartas**
 
-- <http://juancuartas.com>
 - <https://twitter.com/juancuartas>
 
 ## Copyright and license
